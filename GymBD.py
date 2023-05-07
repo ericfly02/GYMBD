@@ -63,6 +63,8 @@ def create_empleats(cur):
     )""")
 
   empleats_inserted = 0
+  current_ciutat = 0
+  
   while empleats_inserted < num_empleats:
     print(empleats_inserted+1, end = '\r')
     # Generate unique dni
@@ -85,7 +87,7 @@ def create_empleats(cur):
 
     num_ciutats = cur.execute("SELECT COUNT(*) FROM Ciutats;")
     num_ciutats = cur.fetchone()[0]
-    current_ciutat = 0
+    #print(num_ciutats)
 
     # Make each city of the table Ciutats appear at least once in the Empleats table
     if current_ciutat < num_ciutats:
@@ -93,17 +95,13 @@ def create_empleats(cur):
         nom_ciutat   = cur.fetchone()[0]
         cur.execute("SELECT codi_postal FROM Ciutats WHERE nom = '%s';" % (nom_ciutat,))
         codi_postal = cur.fetchone()[0]
-        current_ciutat += 1
+        #current_ciutat += 1
 
     # Select a random city from the Ciutats table
     cur.execute("SELECT nom FROM Ciutats ORDER BY RANDOM() LIMIT 1")
     nom_ciutat   = cur.fetchone()[0]
     cur.execute("SELECT codi_postal FROM Ciutats WHERE nom = '%s';" % (nom_ciutat,))
     codi_postal = cur.fetchone()[0]
-
-    # Check if the city already exists in the table
-    cur.execute("SELECT COUNT(*) FROM Empleats WHERE nom = %s AND dni = %s", (nom,dni))
-    count_dni = cur.fetchone()[0]
 
     # There can't be more than 1 encarregat on the same city
     if empleats_inserted > 0:
@@ -113,8 +111,12 @@ def create_empleats(cur):
             if count_encarregats > 0:
                 tipus = 'treballador'
 
+    # Check if an employee with the same dni already exists in the table
+    cur.execute("SELECT COUNT(*) FROM Empleats WHERE nom = %s AND dni = %s", (nom,dni))
+    count_dni = cur.fetchone()[0]
+
     if count_dni == 0:
-        empleats_inserted += 1
+        #empleats_inserted += 1
         try:
             cur.execute("INSERT INTO Empleats VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (dni, tipus, sou, nom, cognoms, compte_bancari, telefon, naixement, sexe, horaris, nom_ciutat, codi_postal))
         except psycopg2.IntegrityError as e:
@@ -122,6 +124,7 @@ def create_empleats(cur):
             print("Error inserting (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s). Error information: %s" % (dni, tipus, sou, nom, cognoms, compte_bancari, telefon, naixement, sexe, horaris, nom_ciutat, codi_postal, e))
         conn.commit()
         empleats_inserted += 1
+        current_ciutat += 1
 
 
 def create_gimnasos(cur):
@@ -129,14 +132,14 @@ def create_gimnasos(cur):
   cur.execute("DROP TABLE IF EXISTS Gimnasos CASCADE")
   cur.execute("""CREATE TABLE Gimnasos (
         codi varchar(8) NOT NULL,
-        adreça varchar(255) NOT NULL,
+        adreca varchar(255) NOT NULL,
         telefon numeric(9,0) NOT NULL,
         correu_electronic varchar(64) NOT NULL,
         nom_ciutat varchar(50) NOT NULL,
         codi_postal numeric(5,0) NOT NULL,
         encarregat varchar(9) NOT NULL,
         PRIMARY KEY (codi),
-        UNIQUE(adreça, nom_ciutat, codi_postal),
+        UNIQUE(adreca, nom_ciutat, codi_postal),
         UNIQUE(telefon),
         UNIQUE(correu_electronic),
         FOREIGN KEY (nom_ciutat, codi_postal) REFERENCES Ciutats(nom, codi_postal) ON UPDATE CASCADE ON DELETE RESTRICT,
@@ -147,8 +150,9 @@ def create_gimnasos(cur):
   while gimnasos_inserted < num_gimnasos:
     print(gimnasos_inserted+1, end = '\r')
 
-    codi = fake.uuid4()
-    adreça = fake.street_address()
+    codi = ''.join(fake.random_letters(length=4)) + str(fake.random_int(min=1000, max=9999))
+
+    adreca = fake.street_address()
     telefon = fake.random_int(min=600000000, max=699999999)
     correu_electronic = fake.email()
 
@@ -160,19 +164,17 @@ def create_gimnasos(cur):
 
     # get the encarregat from the specific city
     cur.execute("SELECT dni FROM Empleats WHERE tipus = 'encarregat' AND nom_ciutat = '%s';" % (nom_ciutat,))
-    encarregat = cur.fetchone()[0]
 
-    # Check if the city already exists in the table
-    cur.execute("SELECT COUNT(*) FROM Ciutats WHERE nom = %s ", (nom_ciutat,))
-    count = cur.fetchone()[0]
+    r = cur.fetchone()
 
-    if count == 0:
-        gimnasos_inserted += 1
+    if r is not None:
         try:
-            cur.execute("INSERT INTO Gimnasos VALUES (%s, %s, %s, %s, %s, %s, %s)" % (codi, adreça, telefon, correu_electronic, nom_ciutat, codi_postal, encarregat))
+            encarregat = r[0]
+            cur.execute("INSERT INTO Gimnasos VALUES (%s, %s, %s, %s, %s, %s, %s)", (codi, adreca, telefon, correu_electronic, nom_ciutat, codi_postal, encarregat))
+
         except psycopg2.IntegrityError as e:
             conn.rollback()
-            print("Error inserting (%s, %s, %s, %s, %s, %s, %s). Error information: %s" % (codi, adreça, telefon, correu_electronic, nom_ciutat, codi_postal, encarregat, e))
+            print("Error inserting (%s, %s, %s, %s, %s, %s, %s). Error information: %s" % (codi, adreca, telefon, correu_electronic, nom_ciutat, codi_postal, encarregat, e))
         conn.commit()
         gimnasos_inserted += 1
 
