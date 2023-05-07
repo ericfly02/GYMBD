@@ -6,8 +6,9 @@ fake = Faker('es_ES')
 
 
 num_ciutats = 100
-num_empleats = 100
-num_gimnasos = 100
+num_empleats = 20000
+num_gimnasos = 5000
+num_sales = 1000
 
 
 def create_ciutats(cur):
@@ -152,6 +153,10 @@ def create_gimnasos(cur):
 
     codi = ''.join(fake.random_letters(length=4)) + str(fake.random_int(min=1000, max=9999))
 
+    # Check if a gimnas already exists with the same codi
+    cur.execute("SELECT COUNT(*) FROM Gimnasos WHERE codi = %s", (codi,))
+    count_codi = cur.fetchone()[0]
+
     adreca = fake.street_address()
     telefon = fake.random_int(min=600000000, max=699999999)
     correu_electronic = fake.email()
@@ -167,7 +172,7 @@ def create_gimnasos(cur):
 
     r = cur.fetchone()
 
-    if r is not None:
+    if r is not None and count_codi == 0:
         try:
             encarregat = r[0]
             cur.execute("INSERT INTO Gimnasos VALUES (%s, %s, %s, %s, %s, %s, %s)", (codi, adreca, telefon, correu_electronic, nom_ciutat, codi_postal, encarregat))
@@ -177,6 +182,42 @@ def create_gimnasos(cur):
             print("Error inserting (%s, %s, %s, %s, %s, %s, %s). Error information: %s" % (codi, adreca, telefon, correu_electronic, nom_ciutat, codi_postal, encarregat, e))
         conn.commit()
         gimnasos_inserted += 1
+
+
+def create_sales(cur):
+  print("%d sales will be inserted." % num_sales)
+  cur.execute("DROP TABLE IF EXISTS Sales CASCADE")
+  cur.execute("""CREATE TABLE Sales(
+        codi varchar(8) NOT NULL,
+        codi_gimnas varchar(8) NOT NULL,
+        aforament_maxim numeric(3,0),
+        PRIMARY KEY (codi, codi_gimnas),
+        FOREIGN KEY (codi_gimnas) references Gimnasos(codi) on update cascade on delete cascade
+    )""")
+
+  sales_inserted = 0
+  while sales_inserted < num_sales:
+    print(sales_inserted+1, end = '\r')
+
+    codi = ''.join(fake.random_letters(length=4)) + str(fake.random_int(min=1000, max=9999))
+    # Check if a sala already exists with the same codi
+    cur.execute("SELECT COUNT(*) FROM Sales WHERE codi = %s", (codi,))
+    count_codi = cur.fetchone()[0]
+
+    # Select a random gimnas and its codi
+    cur.execute("SELECT codi FROM Gimnasos ORDER BY RANDOM() LIMIT 1")
+    codi_gimnas   = cur.fetchone()[0]
+
+    aforament_maxim = fake.random_int(min=50, max=500)
+
+    if count_codi == 0:
+        try:
+            cur.execute("INSERT INTO Sales VALUES ('%s', '%s', '%s')" % (codi, codi_gimnas, aforament_maxim))
+        except psycopg2.IntegrityError as e:
+            conn.rollback()
+            print("Error inserting (%s, %s, %s). Error information: %s" % (codi, codi_gimnas, aforament_maxim, e))
+        conn.commit()
+        sales_inserted += 1
 
 
 # Programa principal
@@ -192,6 +233,7 @@ cur = conn.cursor()
 create_ciutats(cur)
 create_empleats(cur)
 create_gimnasos(cur)
+create_sales(cur)
 
 cur.close()
 conn.close()
