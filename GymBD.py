@@ -7,6 +7,7 @@ fake = Faker('es_ES')
 
 num_ciutats = 100
 num_empleats = 100
+num_gimnasos = 100
 
 
 def create_ciutats(cur):
@@ -66,7 +67,8 @@ def create_empleats(cur):
     print(empleats_inserted+1, end = '\r')
     # Generate unique dni
     dni = str(randint(10000000, 99999999)) + fake.random_letter()
-    tipus = fake.random_element(elements=('encarregat', 'treballador'))
+    #tipus = fake.random_element(elements=('encarregat', 'treballador'))
+    tipus = 'encarregat'
     sou = fake.pydecimal(left_digits=5, right_digits=2, positive=True)
     nom = fake.first_name()
     cognoms = fake.last_name() + ' ' + fake.last_name()
@@ -81,12 +83,17 @@ def create_empleats(cur):
     # Use the shift_range in the Empleats table insert statement
     horaris = fake.random_element(elements=(shift_range,))
 
-    # There can't be more than 1 encarregat on the same city
-    if tipus == 'encarregat':
-        cur.execute("SELECT COUNT(*) FROM Empleats WHERE tipus = 'encarregat' AND nom_ciutat = '%s';" % (nom_ciutat,))
-        count_encarregats = cur.fetchone()[0]
-        if count_encarregats > 0:
-            tipus = 'treballador'
+    num_ciutats = cur.execute("SELECT COUNT(*) FROM Ciutats;")
+    num_ciutats = cur.fetchone()[0]
+    current_ciutat = 0
+
+    # Make each city of the table Ciutats appear at least once in the Empleats table
+    if current_ciutat < num_ciutats:
+        cur.execute("SELECT nom FROM Ciutats ORDER BY nom LIMIT 1 OFFSET %s", (current_ciutat,))
+        nom_ciutat   = cur.fetchone()[0]
+        cur.execute("SELECT codi_postal FROM Ciutats WHERE nom = '%s';" % (nom_ciutat,))
+        codi_postal = cur.fetchone()[0]
+        current_ciutat += 1
 
     # Select a random city from the Ciutats table
     cur.execute("SELECT nom FROM Ciutats ORDER BY RANDOM() LIMIT 1")
@@ -98,6 +105,14 @@ def create_empleats(cur):
     cur.execute("SELECT COUNT(*) FROM Empleats WHERE nom = %s AND dni = %s", (nom,dni))
     count_dni = cur.fetchone()[0]
 
+    # There can't be more than 1 encarregat on the same city
+    if empleats_inserted > 0:
+        if tipus == 'encarregat':
+            cur.execute("SELECT COUNT(*) FROM Empleats WHERE tipus = 'encarregat' AND nom_ciutat = '%s';" % (nom_ciutat,))
+            count_encarregats = cur.fetchone()[0]
+            if count_encarregats > 0:
+                tipus = 'treballador'
+
     if count_dni == 0:
         empleats_inserted += 1
         try:
@@ -107,6 +122,59 @@ def create_empleats(cur):
             print("Error inserting (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s). Error information: %s" % (dni, tipus, sou, nom, cognoms, compte_bancari, telefon, naixement, sexe, horaris, nom_ciutat, codi_postal, e))
         conn.commit()
         empleats_inserted += 1
+
+
+def create_gimnasos(cur):
+  print("%d Gimnasos will be inserted." % num_gimnasos)
+  cur.execute("DROP TABLE IF EXISTS Gimnasos CASCADE")
+  cur.execute("""CREATE TABLE Gimnasos (
+        codi varchar(8) NOT NULL,
+        adreça varchar(255) NOT NULL,
+        telefon numeric(9,0) NOT NULL,
+        correu_electronic varchar(64) NOT NULL,
+        nom_ciutat varchar(50) NOT NULL,
+        codi_postal numeric(5,0) NOT NULL,
+        encarregat varchar(9) NOT NULL,
+        PRIMARY KEY (codi),
+        UNIQUE(adreça, nom_ciutat, codi_postal),
+        UNIQUE(telefon),
+        UNIQUE(correu_electronic),
+        FOREIGN KEY (nom_ciutat, codi_postal) REFERENCES Ciutats(nom, codi_postal) ON UPDATE CASCADE ON DELETE RESTRICT,
+        FOREIGN KEY (encarregat) REFERENCES Empleats(dni) ON UPDATE CASCADE ON DELETE RESTRICT
+    );""")
+
+  gimnasos_inserted = 0
+  while gimnasos_inserted < num_gimnasos:
+    print(gimnasos_inserted+1, end = '\r')
+
+    codi = fake.uuid4()
+    adreça = fake.street_address()
+    telefon = fake.random_int(min=600000000, max=699999999)
+    correu_electronic = fake.email()
+
+    # Select a random city from the Ciutats table
+    cur.execute("SELECT nom FROM Ciutats ORDER BY RANDOM() LIMIT 1")
+    nom_ciutat   = cur.fetchone()[0]
+    cur.execute("SELECT codi_postal FROM Ciutats WHERE nom = '%s';" % (nom_ciutat,))
+    codi_postal = cur.fetchone()[0]
+
+    # get the encarregat from the specific city
+    cur.execute("SELECT dni FROM Empleats WHERE tipus = 'encarregat' AND nom_ciutat = '%s';" % (nom_ciutat,))
+    encarregat = cur.fetchone()[0]
+
+    # Check if the city already exists in the table
+    cur.execute("SELECT COUNT(*) FROM Ciutats WHERE nom = %s ", (nom_ciutat,))
+    count = cur.fetchone()[0]
+
+    if count == 0:
+        gimnasos_inserted += 1
+        try:
+            cur.execute("INSERT INTO Gimnasos VALUES (%s, %s, %s, %s, %s, %s, %s)" % (codi, adreça, telefon, correu_electronic, nom_ciutat, codi_postal, encarregat))
+        except psycopg2.IntegrityError as e:
+            conn.rollback()
+            print("Error inserting (%s, %s, %s, %s, %s, %s, %s). Error information: %s" % (codi, adreça, telefon, correu_electronic, nom_ciutat, codi_postal, encarregat, e))
+        conn.commit()
+        gimnasos_inserted += 1
 
 
 # Programa principal
@@ -121,6 +189,7 @@ cur = conn.cursor()
 
 create_ciutats(cur)
 create_empleats(cur)
+create_gimnasos(cur)
 
 cur.close()
 conn.close()
