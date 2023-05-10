@@ -1,14 +1,16 @@
 import psycopg2
 from random import randint
 from faker import Faker
-from datetime import time
+from datetime import time, datetime, timedelta
+
 fake = Faker('es_ES')
 
 
 num_ciutats = 100
-num_empleats = 20000
-num_gimnasos = 5000
-num_sales = 1000
+num_empleats = 100
+num_gimnasos = 100
+num_sales = 100
+num_classes = 100
 
 
 def create_ciutats(cur):
@@ -38,7 +40,6 @@ def create_ciutats(cur):
             print("Error inserting (%s, %s). Error information: %s" % (nom, codi_postal, e))
         conn.commit()
         cities_inserted += 1
-
 
 
 def create_empleats(cur):
@@ -79,12 +80,7 @@ def create_empleats(cur):
     compte_bancari = fake.iban()
     naixement = fake.date_of_birth(minimum_age=16, maximum_age=90)
     sexe = fake.random_element(elements=('H', 'D'))
-    # Generate a time range for the day shift (8:00 - 20:00)
-    start_time = time(hour=8)
-    end_time = time(hour=20)
-    shift_range = f'{start_time.strftime("%H:%M")} - {end_time.strftime("%H:%M")}'
-    # Use the shift_range in the Empleats table insert statement
-    horaris = fake.random_element(elements=(shift_range,))
+    horaris = fake.random_element(elements=('7:00 - 15:00', '8:00 - 16:00', '9:00 - 17:00', '15:00 - 20:00', '16:00 - 21:00', '17:00 - 22:00'))
 
     num_ciutats = cur.execute("SELECT COUNT(*) FROM Ciutats;")
     num_ciutats = cur.fetchone()[0]
@@ -185,7 +181,7 @@ def create_gimnasos(cur):
 
 
 def create_sales(cur):
-  print("%d sales will be inserted." % num_sales)
+  print("%d Sales will be inserted." % num_sales)
   cur.execute("DROP TABLE IF EXISTS Sales CASCADE")
   cur.execute("""CREATE TABLE Sales(
         codi varchar(8) NOT NULL,
@@ -220,6 +216,79 @@ def create_sales(cur):
         sales_inserted += 1
 
 
+def create_classes(cur):
+  print("%d Classes will be inserted." % num_ciutats)
+  cur.execute("DROP TABLE IF EXISTS Classes CASCADE")
+  cur.execute("""CREATE TABLE Classes(
+        codi varchar(8) NOT NULL,
+        tipus varchar(50) NOT NULL,
+        data date NOT NULL,
+        duració varchar(3) NOT NULL,
+        hora time NOT NULL,
+        codi_sala varchar(8) NOT NULL,
+        codi_gimnas varchar(8) NOT NULL,
+        tutor varchar(9) NOT NULL,
+        PRIMARY KEY (codi),
+        -- No es pot donar el cas que hi hagin dos classes el mateix dia, a la mateixa hora, al mateix gimnas i a la mateixa sala
+        UNIQUE(codi_gimnas, hora, codi_sala, data),
+        FOREIGN KEY (codi_gimnas) references Gimnasos(codi) on update cascade on delete restrict,
+        FOREIGN KEY (codi_sala, codi_gimnas) references Sales(codi, codi_gimnas) on update cascade on delete restrict,
+        FOREIGN KEY (tutor) references Empleats(dni) on update cascade on delete restrict
+)""")
+
+  classes_inserted = 0
+  while classes_inserted < num_classes:
+    print(classes_inserted+1, end = '\r')
+
+    codi  = ''.join(fake.random_letters(length=4)) + str(fake.random_int(min=1000, max=9999))
+    tipus = fake.random_element(elements=("Zumba", "Pilates", "Yoga", "Crossfit", "Spinning", "Entrenament funcional", "Bodypump", "Boxa", "TRX", "Aquagym", "Dancefit", "HIIT", "Cardio", "kickboxing", "Bootcamp", "Barre fitness", "Step", "Salsa fitness", "Aero dance", "Cycling"))
+    data = fake.date_between(start_date='-1y', end_date='+1y')
+
+    duracio = fake.random_int(min=10, max=120)
+
+    # Calculem horari random
+    start = fake.random_int(min=7, max=21)  # Hours
+    time_str = f"{start}:00" 
+    time_obj = datetime.strptime(time_str, "%H:%M")
+    final_time = (time_obj + timedelta(minutes=duracio)).time()
+    hora = final_time
+
+    # seleccionem una gimnas aleatori
+    cur.execute("SELECT codi_gimnas FROM Sales ORDER BY RANDOM() LIMIT 1")
+    codi_gimnas = cur.fetchone()[0]
+
+    # seleccionem una sala aleatoria del gimnas
+    cur.execute("SELECT codi FROM Sales WHERE codi_gimnas = %s ORDER BY RANDOM() LIMIT 1", (codi_gimnas,))
+    
+    codi_sala = cur.fetchone()[0]
+
+    # seleccionem un tutor aleatori del gimnas
+    cur.execute("SELECT codi_postal FROM Gimnasos WHERE codi = %s ORDER BY RANDOM() LIMIT 1", (codi_gimnas,))
+    result = cur.fetchone()[0]
+    cur.execute("SELECT dni FROM Empleats WHERE codi_postal = %s ORDER BY RANDOM() LIMIT 1", (result,))
+    tutor = cur.fetchone()[0]
+
+    if classes_inserted > 0:
+
+        # mirar si el codi ya existe i assignarle el tipus
+        cur.execute("SELECT COUNT(*) FROM Classes WHERE codi = %s", (codi,))
+        count_codi = cur.fetchone()[0]
+
+        if count_codi > 0:
+            cur.execute("SELECT tipus FROM Classes WHERE codi = %s", (codi,))
+            tipus = cur.fetchone()[0]
+
+        try:
+            cur.execute("INSERT INTO Classes VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (codi, tipus, data, duracio, hora, codi_sala, codi_gimnas, tutor))
+        except psycopg2.IntegrityError as e:
+            conn.rollback()
+            print("Error inserting (%s, %s, %s, %s, %s, %s, %s, %s). Error information: %s" % (codi, tipus, data, duracio, hora, codi_sala, codi_gimnas, tutor, e))
+        conn.commit()
+
+        
+    classes_inserted += 1
+
+
 # Programa principal
 conn = psycopg2.connect(
     host="ubiwan.epsevg.upc.edu",
@@ -234,6 +303,7 @@ create_ciutats(cur)
 create_empleats(cur)
 create_gimnasos(cur)
 create_sales(cur)
+create_classes(cur)
 
 cur.close()
 conn.close()
