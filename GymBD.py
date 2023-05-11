@@ -304,6 +304,27 @@ def create_dies(cur):
 	for day in days:
 		cur.execute("INSERT INTO Dies (dia) VALUES ('%s')" % (day))
 	conn.commit()
+	
+def create_aliments(cur):
+	  print("7 dies will be inserted.")
+	  cur.execute("DROP TABLE IF EXISTS Dies CASCADE")
+	  cur.execute("""CREATE TABLE Aliments(
+nom varchar(20) NOT NULL,
+PRIMARY KEY (nom)
+);""")
+	  aliments_inserted = 0
+	  while aliments_inserted < num_aliments:
+	    print(aliments_inserted+1, end = '\r')
+
+	    if aliments_inserted > 0:
+		aliment = fake.foods()
+		try:
+		    cur.execute("INSERT INTO Classes VALUES ('%s')" % (aliment,))
+		except psycopg2.IntegrityError as e:
+		    conn.rollback()
+		    print("Error inserting ('%s')" % (aliment,))        
+	    classes_inserted += 1
+	  conn.commit()
 
 def create_dietes(cur):
   print("%d Dietes will be inserted." % num_dietes)
@@ -499,6 +520,114 @@ WHERE client = 'dni' AND data = (
 				    print("Error updating last date for client "+str(client))
   conn.commit()
 
+
+def create_quantificador_dietes(cur):
+  print("%d Dietes will be inserted." % num_quantificador_dietes)
+  cur.execute("DROP TABLE IF EXISTS Dietes CASCADE")
+  cur.execute("""CREATE TABLE Quantificadors_Dietes(
+	quantificador numeric(4,2) NOT NULL,
+	dieta varchar(8) NOT NULL,
+   	client varchar(9) NOT NULL,
+	dietista varchar(9),
+PRIMARY KEY (dieta, client),
+FOREIGN KEY (dieta) references Dietes(codi) on update cascade on delete cascade,
+FOREIGN KEY (client) references Clients(dni) on update cascade on delete cascade,
+FOREIGN KEY (dietista) references Empleats(dni) on update cascade on delete restrict
+);
+""")
+
+  quantificador_dietes_inserted = 0
+  while quantificador_dietes_inserted < num_quantificador_dietes:
+    print(quantificador_dietes_inserted+1, end = '\r')
+    quantificador = fake.pyfloat(left_digits=1, right_digits=2, positive=True, min_value=0.2, max_value=3)
+    # seleccionem un client aleatori
+    cur.execute("SELECT dni FROM Clients ORDER BY RANDOM() LIMIT 1")
+    client = cur.fetchone()[0]
+    # seleccionem una dieta aleatoria
+    cur.execute("SELECT codi FROM Dietes ORDER BY RANDOM() LIMIT 1")
+    dieta = cur.fetchone()[0]
+    # seleccionem un dietista aleatori
+    cur.execute("SELECT dni FROM Empleats WHERE tipus = 'dietista' ORDER BY RANDOM() LIMIT 1")
+    dietista = cur.fetchone()[0]
+    try:
+            cur.execute("INSERT INTO Classes VALUES ('%s', '%s', '%s', '%s')" % (quantificador, dieta, client, dietista))
+    except psycopg2.IntegrityError as e:
+            conn.rollback()
+            print("Error inserting (%s, '%s', %s, %s). Error information: %s" % (quantificador, dieta, client, dietista))
+    conn.commit()
+
+    quantificador_dietes_inserted += 1
+
+def create_quantificador_rutines(cur):
+  print("%d Dietes will be inserted." % num_quantificador_rutines)
+  cur.execute("DROP TABLE IF EXISTS Dietes CASCADE")
+  cur.execute("""
+CREATE TABLE Quantificadors_Pesos(
+	quantificador numeric(4,2) NOT NULL,
+	rutina varchar(8) NOT NULL,
+   	client varchar(9) NOT NULL,
+	entrenador varchar(9),
+PRIMARY KEY (rutina, client),
+FOREIGN KEY (rutina) references Rutines(codi) on update cascade on delete cascade,
+FOREIGN KEY (client) references Clients(dni) on update cascade on delete cascade,
+FOREIGN KEY (entrenador) references Empleats(dni) on update cascade on delete restrict
+);
+""")
+
+  quantificador_rutines_inserted = 0
+  while quantificador_rutines_inserted < num_quantificador_rutines:
+    print(quantificador_rutines_inserted+1, end = '\r')
+    quantificador = fake.pyfloat(left_digits=1, right_digits=2, positive=True, min_value=0.2, max_value=3)
+    # seleccionem un client aleatori
+    cur.execute("SELECT dni FROM Clients ORDER BY RANDOM() LIMIT 1")
+    client = cur.fetchone()[0]
+    # seleccionem una dieta aleatoria
+    cur.execute("SELECT codi FROM Dietes ORDER BY RANDOM() LIMIT 1")
+    dieta = cur.fetchone()[0]
+    # seleccionem un dietista aleatori
+    cur.execute("SELECT dni FROM Empleats WHERE tipus = 'entrenador' ORDER BY RANDOM() LIMIT 1")
+    entrenador = cur.fetchone()[0]
+    try:
+            cur.execute("INSERT INTO Classes VALUES ('%s', '%s', '%s', '%s')" % (quantificador, dieta, client, entrenador))
+    except psycopg2.IntegrityError as e:
+            conn.rollback()
+            print("Error inserting (%s, '%s', %s, %s). Error information: %s" % (quantificador, dieta, client, entrenador))
+    conn.commit()
+
+    quantificador_rutines_inserted += 1
+
+
+def create_apats(cur):
+  print("%d Dietes will be inserted." % num_apats)
+  cur.execute("DROP TABLE IF EXISTS Dietes CASCADE")
+  cur.execute("""CREATE TABLE Apats(
+dieta varchar(8) NOT NULL,
+dia varchar(9) NOT NULL,
+PRIMARY KEY (dieta,dia),
+FOREIGN KEY (dieta) references Dietes(codi) on update cascade on delete cascade,
+FOREIGN KEY (dia) references Dies(dia) on update cascade on delete cascade
+);
+
+""")
+
+  apats_inserted = 0
+  while apats_inserted < num_apats:
+    print(apats_inserted+1, end = '\r')
+    nombre_dies = fake.fake.random_int(min=1, max=7)
+    # seleccionem un client aleatori
+    cur.execute("SELECT dia FROM dies ORDER BY RANDOM() LIMIT '%s'" % (nombre_dies))
+    dies = cur.fetchone()
+    # seleccionem una dieta aleatoria
+    cur.execute("SELECT codi FROM Dietes ORDER BY RANDOM() LIMIT 1")
+    dieta = cur.fetchone()[0]
+    try:
+            cur.execute("INSERT INTO Classes VALUES ('%s', '%s')" % (dieta, dia[apats_inserted]))
+    except psycopg2.IntegrityError as e:
+            conn.rollback()
+            print("Error inserting (%s, '%s')." % (dieta, dia[apats_inserted]))
+    conn.commit()
+
+    apats_inserted += 1
 
 ##########################################################Funcions auxiliars a les de crear#######################################################
 
