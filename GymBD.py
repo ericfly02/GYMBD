@@ -742,7 +742,7 @@ FOREIGN KEY (ronda) references Rondes(codi) on update cascade on delete cascade
     codi = ''.join(fake.random_letters(length=4)) + str(fake.random_int(min=1000, max=9999))
     try:
       cur.execute("INSERT INTO Entrenaments VALUES ('%s')" % (codi,))
-        if entrenaments_inserted > num_entrenaments*0.1 :
+      if entrenaments_inserted > num_entrenaments*0.1:
             cur.execute("SELECT dni, inici FROM Clients ORDER BY RANDOM() LIMIT 1")
             client = cur.fetchone()[0]
             inici = cur.fetchone()[1]
@@ -756,7 +756,7 @@ FOREIGN KEY (ronda) references Rondes(codi) on update cascade on delete cascade
             except:
                 conn.rollback()
                 print("Error 465354 - Call your system manager for more detailed information")
-        else:
+      else:
             cur.execute("SELECT codi FROM Rutines ORDER BY RANDOM() LIMIT 1")
             rutina = cur.fetchone()[0]
             nombre_dies = fake.fake.random_int(min=1, max=7)
@@ -863,7 +863,7 @@ def llista_laborables_periode(start_date, end_date):
 
 	dates_list = []
 
-	while start_date < today:
+	while start_date < end_date:
 		year = start_date.year
 		month = start_date.month
 		first_working_day = primer_laborable(year, month)
