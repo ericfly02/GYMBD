@@ -918,9 +918,9 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
-#create_ciutats(cur)
-#create_empleats(cur)
-create_gimnasos(cur)
+###create_ciutats(cur)
+###create_empleats(cur)
+#create_gimnasos(cur)
 create_treballadors(cur)
 create_sales(cur)
 create_classes(cur)
