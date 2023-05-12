@@ -727,7 +727,7 @@ FOREIGN KEY (exercici) references Exercicis(codi) on update cascade on delete ca
 );
 CREATE TABLE Series(
 num_serie numeric(2, 0) NOT NULL,
-pes  numeric (4,1),
+pes  numeric (4,1) NOT NULL,
 num_repeticions numeric(2,0),
 duracio time,
 ronda varchar(8) NOT NULL,
@@ -880,17 +880,27 @@ def fill_entrenament(cur, entrenament):
         exercici = cur.fetchone()[0]
         try: 
             cur.execute("INSERT INTO Franges_Horaries VALUES ('%s', '%s', '%s')" % (codi, ordre, entrenament, exercici))
-            nombre_quantitats = fake.fake.random_int(min=1, max=10)
-            for j in range(nombre_quantitats):
+            nombre_series = fake.fake.random_int(min=1, max=10)
+            for j in range(1, nombre_series):
                 cur.execute("SELECT nom FROM Aliments ORDER BY RANDOM() LIMIT 1")
                 aliment = cur.fetchone()[0]
-                quantitat = fake.pyfloat(left_digits=3, right_digits=1, positive=True, min_value=0.5, max_value=180)
-                unitats = fake.random_element(elements=('litres', 'grams', 'kilograms', 'unitats', 'dotzenes'))
-                try: 
-                  cur.execute("INSERT INTO Quantitats_Aliments VALUES ('%s', '%s', '%s', '%s', '%s', '%s')" % (quantitat, unitats, hora, dieta, dies[n_dia], aliment))
-                except:
-                  conn.rollback()
-                  print("Error 5646532185 - Call your system manager for more detailed information")
+                pes = fake.pyfloat(left_digits=3, right_digits=1, positive=True, min_value=0, max_value=200)
+                tipus = fake.fake.random_int(min=0, max=8)
+                if tipus == 8:
+                  duracio_segons = fake.random_int(min=5, max=120)
+                  duracio = timedelta(seconds=duracio_segons)
+                  try: 
+                    cur.execute("INSERT INTO Series VALUES ('%s', '%s', NULL, '%s', '%s')" % (j, pes, duracio, codi))
+                  except:
+                    conn.rollback()
+                    print("Error 4387596847 - Call your system manager for more detailed information")
+                else:
+                  num_repeticions =  fake.fake.random_int(min=0, max=30)
+                  try: 
+                    cur.execute("INSERT INTO Series VALUES ('%s', '%s', '%s', NULL, '%s')" % (j, pes, num_repeticions, codi))
+                  except:
+                    conn.rollback()
+                    print("Error 3954867587 - Call your system manager for more detailed information")
         except:
           conn.rollback()
           print("Error 54651635 - Call your system manager for more detailed information")
