@@ -11,28 +11,42 @@ from dateutil.relativedelta import relativedelta
 fake = Faker('es_ES')
 fake.add_provider(FoodProvider)
 
-
-num_ciutats = 50
-num_empleats = 600
-num_treballadors = 1000
-num_gimnasos = 100
-num_sales = 100
+####Estas son los datos que meteremos
+num_ciutats = 300
+num_empleats = 6000
+num_treballadors = 10000
+num_gimnasos = 350
+num_sales = 5000
+num_classes = 10000
+num_aliments = 200
+num_dietes = 200
+num_rutines = 200
+num_clients = 30000
+num_quantificador_dietes = 10000
+num_quantificador_rutines = 10000
+num_entrenaments = 50000
+num_apats = 50000
+num_participacions = 10000
+sales_per_exercici = 1000
+num_exercicis = 300
+##datos para hacer pruebas
+num_ciutats = 5
+num_empleats = 120
+num_treballadors = 140
+num_gimnasos = 6
+num_sales = 50
 num_classes = 100
-num_aliments = 100
-num_dietes = 100
+num_aliments = 20
+num_dietes = 20
 num_rutines = 100
-num_clients = 100
-num_s = 100
+num_clients = 300
 num_quantificador_dietes = 100
 num_quantificador_rutines = 100
-num_apats = 100
-num_entrenaments = 100
-num_realitza_exercicis = 100
 num_participacions = 100
-sales_per_exercici = 100
-num_exercicis = 100
-
-
+num_entrenaments = 5
+num_apats = 50
+sales_per_exercici = 10
+num_exercicis = 10
 
 def create_ciutats(cur):
   print("%d ciutats will be inserted." % num_ciutats)
@@ -132,27 +146,34 @@ def create_empleats(cur):
 
 def create_treballadors(cur):
   print("%d Treballadors will be inserted." % num_treballadors)
-  
+  ################################################################################quitar después de pruebas
+  cur.execute("DROP TABLE IF EXISTS Treballadors CASCADE;")
+  cur.execute("""CREATE TABLE Treballadors(
+      gimnas varchar(8) NOT NULL,
+      empleat varchar(9) NOT NULL,
+      PRIMARY KEY (gimnas, empleat),
+      FOREIGN KEY (gimnas) references Gimnasos(codi) on update cascade on delete cascade,
+      FOREIGN KEY (empleat) references Empleats(dni) on update cascade on delete cascade
+  );""")
 
   treballadors_inserted = 0
   while treballadors_inserted < num_treballadors:
     print(treballadors_inserted+1, end = '\r')
 
     # seleccionem un empleat aleatori
-    cur.execute("SELECT dni FROM Empleats ORDER BY RANDOM() LIMIT 1")
-    empleat = cur.fetchone()[0]
-
-    # seleccionem un gimnas aleatori
-    cur.execute("SELECT codi FROM Gimnasos ORDER BY RANDOM() LIMIT 1")
-    gimnas = cur.fetchone()[0]
+    cur.execute("SELECT e.dni, g.codi FROM Empleats e JOIN Gimnasos g ON e.codi_postal = g.codi_postal ORDER BY RANDOM() LIMIT 1")
+    variable = cur.fetchone()
+    empleat = variable[0]
+    gimnas = variable[1]
 
     try:
         cur.execute("INSERT INTO Treballadors VALUES ('%s', '%s')" % (gimnas, empleat))
+        treballadors_inserted += 1
     except psycopg2.IntegrityError as e:
         conn.rollback()
-        #print("Error inserting (%s, %s). Error information: %s" % (gimnas, empleat, e))
+        print("Error inserting (%s, %s). Error information: %s" % (gimnas, empleat, e))
 
-    treballadors_inserted += 1
+    
 
 
 def create_gimnasos(cur):
@@ -257,7 +278,7 @@ def create_sales(cur):
 
 
 def create_classes(cur):
-  print("%d Classes will be inserted." % num_ciutats)
+  print("%d Classes will be inserted." % num_classes)
   cur.execute("DROP TABLE IF EXISTS Classes CASCADE;")
   cur.execute("""CREATE TABLE Classes(
         codi varchar(8) NOT NULL,
@@ -490,7 +511,7 @@ def create_clients(cur):
 
 
 def create_pagaments(cur):
-  print("%d Pagaments will be inserted." % num_s)
+  print("Pagaments will be inserted.")
   cur.execute("DROP TABLE IF EXISTS Pagaments CASCADE;")
   cur.execute("""CREATE TABLE Pagaments(
     data date NOT NULL,
@@ -775,7 +796,7 @@ def create_entrenaments(cur):
     FOREIGN KEY (ronda) references Rondes(codi) on update cascade on delete cascade
   );""")
 
-  entrenaments_inserted = 0
+  entrenaments_inserted = 0.0
   while entrenaments_inserted < num_entrenaments:
     print(entrenaments_inserted+1, end = '\r')
     codi = ''.join(fake.random_letters(length=4)) + str(fake.random_int(min=1000, max=9999))
@@ -798,7 +819,7 @@ def create_entrenaments(cur):
                 fill_entrenament(cur, codi)
             except psycopg2.IntegrityError as e:
                 conn.rollback()
-                #print("Error inserting ('%s', '%s', '%s', '%s', '%s'). Error information: %s" % (codi, data, hora, client, plantilla, e))
+                print("Error inserting ('%s', '%s', '%s', '%s', '%s'). Error information: %s" % (codi, data, hora, client, plantilla, e))
 
       else:
             cur.execute("SELECT codi FROM Rutines ORDER BY RANDOM() LIMIT 1")
@@ -812,17 +833,18 @@ def create_entrenaments(cur):
                     fill_entrenament(cur, codi)
                 except psycopg2.IntegrityError as e:
                     conn.rollback()
-                    #print("Error inserting ('%s', '%s', '%s'). Error information: %s" % (codi, rutina, dia, e))
+                    print("Error inserting ('%s', '%s', '%s'). Error information: %s" % (codi, rutina, dia, e))
 
     except psycopg2.IntegrityError as e:
       conn.rollback()
-      #print("Error inserting ('%s'). Error information: %s" % (codi, e))
+      print("Error inserting ('%s'). Error information: %s" % (codi, e))
 
     entrenaments_inserted += 1
+    conn.commit()
 
 
 def create_realitza_exercicis(cur):
-  print("%d Realitza_Exercicis will be inserted." % num_realitza_exercicis)
+  print("'%d' Sales will be inserted per exercici", sales_per_exercici)
   cur.execute("DROP TABLE IF EXISTS Realitza_Exercicis CASCADE;")
   cur.execute("""CREATE TABLE Realitza_Exercicis(
       exercici varchar(8) NOT NULL,
@@ -893,7 +915,6 @@ def create_participacions(cur):
       except psycopg2.IntegrityError as e:
           conn.rollback()
           #print("Error inserting (%s, %s). Error information: %s" % (client, classe, e))
-
       participacions_inserted += 1
 
 
@@ -933,7 +954,9 @@ def fill_entrenament(cur, entrenament):
             for j in range(1, nombre_series):
                 cur.execute("SELECT nom FROM Aliments ORDER BY RANDOM() LIMIT 1")
                 aliment = cur.fetchone()[0]
-                pes = fake.pyfloat(left_digits=3, right_digits=1, positive=True, min_value=0, max_value=200)
+                pes = fake.pyfloat(left_digits=3, right_digits=1, positive=True, min_value=0.1, max_value=200)
+                if pes < 0.5:
+                    pes = 0.0
                 tipus = fake.random_int(min=0, max=8)
                 if tipus == 8:
                   duracio_segons = fake.random_int(min=5, max=120)
@@ -970,45 +993,45 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
-create_ciutats(cur)
-conn.commit()
-create_empleats(cur)
-conn.commit()
-create_gimnasos(cur)
-conn.commit()
-create_sales(cur)
-conn.commit()
-create_treballadors(cur)
-conn.commit()
-create_classes(cur)
-conn.commit()
-create_dies(cur)
-conn.commit()
-create_aliments(cur)
-conn.commit()
-create_dietes(cur)
-conn.commit()
-create_rutines(cur)
-conn.commit()
-create_clients(cur)
-conn.commit()
-create_pagaments(cur)
-conn.commit()
-create_quantificador_dietes(cur)
-conn.commit()
-create_quantificador_rutines(cur)
-conn.commit()
-create_apats(cur)
-conn.commit()
-create_exercicis(cur)
+#create_ciutats(cur)
+#conn.commit()
+#create_empleats(cur)
+#conn.commit()
+#create_gimnasos(cur)
+#conn.commit()
+#create_sales(cur)
+#conn.commit()
+
+######################################3falta debugar #create_treballadors(cur)
+#conn.commit()
+#create_classes(cur)
+#conn.commit()
+#create_dies(cur)
+#conn.commit()
+#create_aliments(cur)
+#conn.commit()
+#create_dietes(cur)
+#conn.commit()
+#create_rutines(cur)
+#conn.commit()
+#create_clients(cur)
+#conn.commit()
+#create_quantificador_dietes(cur)
+#conn.commit()
+#create_quantificador_rutines(cur)
+#conn.commit()
+#################################################3esta mal#create_apats(cur)
+#conn.commit()
+#create_exercicis(cur)
 conn.commit()
 create_entrenaments(cur)
 conn.commit()
-create_realitza_exercicis(cur)
+#############Se corta en algun punto k no deberia #create_realitza_exercicis(cur)
 conn.commit()
-create_participacions(cur)
+##Hace algunas de mas create_participacions(cur)
 conn.commit()
-
+#create_pagaments(cur)
+#conn.commit()
 
 cur.close()
 conn.close()
