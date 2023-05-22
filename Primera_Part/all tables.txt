@@ -1,0 +1,270 @@
+CREATE TABLE Ciutats(
+        nom varchar(50) NOT NULL,
+        codi_postal numeric(5,0) NOT NULL,
+        PRIMARY KEY (nom, codi_postal)
+  );
+
+CREATE TABLE Empleats(
+        dni varchar(9) NOT NULL,
+        tipus varchar(20) NOT NULL,
+        sou numeric (7,2) NOT NULL,
+        nom varchar(20) NOT NULL,
+        cognoms varchar(40) NOT NULL,
+        compte_bancari varchar(24) NOT NULL,
+        telefon numeric(9) NOT NULL,
+        naixement date NOT NULL,
+        sexe char(1) NOT NULL,
+        horaris varchar(50) NOT NULL,
+        nom_ciutat varchar(50) NOT NULL,
+        codi_postal numeric(5,0) NOT NULL,
+        PRIMARY KEY (dni),
+        -- Pot existir un cas molt molt especific en el que una parella vulgui cobrar el --seu sou en el mateix compte bancari, per aquest motiu no hi ha una unique_key a --compte bancari 
+        UNIQUE(telefon),
+        FOREIGN KEY (nom_ciutat, codi_postal) references Ciutats(nom, codi_postal) on update cascade on delete restrict
+);
+
+CREATE TABLE Gimnasos (
+        codi varchar(8) NOT NULL,
+        adreca varchar(255) NOT NULL,
+        telefon numeric(9,0) NOT NULL,
+        correu_electronic varchar(64) NOT NULL,
+        nom_ciutat varchar(50) NOT NULL,
+        codi_postal numeric(5,0) NOT NULL,
+        encarregat varchar(9) NOT NULL,
+        PRIMARY KEY (codi),
+        UNIQUE(adreca, nom_ciutat, codi_postal),
+        UNIQUE(telefon),
+        UNIQUE(correu_electronic),
+        FOREIGN KEY (nom_ciutat, codi_postal) REFERENCES Ciutats(nom, codi_postal) ON UPDATE CASCADE ON DELETE RESTRICT,
+        FOREIGN KEY (encarregat) REFERENCES Empleats(dni) ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE Treballadors(
+      gimnas varchar(8) NOT NULL,
+      empleat varchar(9) NOT NULL,
+      PRIMARY KEY (gimnas, empleat),
+      FOREIGN KEY (gimnas) references Gimnasos(codi) on update cascade on delete cascade,
+      FOREIGN KEY (empleat) references Empleats(dni) on update cascade on delete cascade
+);
+
+CREATE TABLE Sales(
+        codi varchar(8) NOT NULL,
+        codi_gimnas varchar(8) NOT NULL,
+        aforament_maxim numeric(3,0),
+        PRIMARY KEY (codi, codi_gimnas),
+        FOREIGN KEY (codi_gimnas) references Gimnasos(codi) on update cascade on delete cascade
+);
+
+CREATE TABLE Classes(
+        codi varchar(8) NOT NULL,
+        tipus varchar(50) NOT NULL,
+        data date NOT NULL,
+        duració time NOT NULL,
+        hora time NOT NULL,
+        codi_sala varchar(8) NOT NULL,
+        codi_gimnas varchar(8) NOT NULL,
+        tutor varchar(9) NOT NULL,
+        PRIMARY KEY (codi),
+        -- No es pot donar el cas que hi hagin dos classes el mateix dia, a la mateixa hora, al mateix gimnas i a la mateixa sala
+        UNIQUE(codi_gimnas, hora, codi_sala, data),
+        FOREIGN KEY (codi_gimnas) references Gimnasos(codi) on update cascade on delete restrict,
+        FOREIGN KEY (codi_sala, codi_gimnas) references Sales(codi, codi_gimnas) on update cascade on delete restrict,
+        FOREIGN KEY (tutor) references Empleats(dni) on update cascade on delete restrict
+);
+
+CREATE TABLE Dies(
+    dia varchar(9) NOT NULL,
+    PRIMARY KEY (dia)
+);
+
+CREATE TABLE Aliments(
+    nom varchar(50) NOT NULL,
+    PRIMARY KEY (nom)
+);
+
+CREATE TABLE Dietes(
+    codi varchar(8) NOT NULL,
+    tipus varchar(30) NOT NULL,
+    dietista varchar (9) NOT NULL,
+    PRIMARY KEY (codi),
+    FOREIGN KEY (dietista) references Empleats(dni) on update cascade on delete restrict
+);
+
+CREATE TABLE Rutines(
+    codi varchar(8) NOT NULL,
+    tipus varchar(25) NOT NULL,
+    entrenador varchar (9) NOT NULL,
+    PRIMARY KEY (codi),
+    FOREIGN KEY (entrenador) references Empleats(dni) on update cascade on delete restrict
+);
+
+CREATE TABLE Clients(
+    dni varchar(9) NOT NULL,
+    inici date NOT NULL,
+    adreca varchar(255) NOT NULL,
+    correu_electronic varchar(64) NOT NULL,
+    nom varchar(20) NOT NULL,
+    cognoms varchar(40) NOT NULL,
+    compte_bancari varchar(24) NOT NULL,
+    telefon numeric(9) NOT NULL,
+    naixement date NOT NULL,
+    sexe char(1) NOT NULL,
+    pes numeric (6,3) NOT NULL,
+    alcada numeric(3,2) NOT NULL,
+    greix numeric (3,1) NOT NULL,
+    massa_ossia numeric (3,1) NOT NULL,
+    massa_muscular numeric(3,1) NOT NULL,
+    estat char(1) NOT NULL,
+    nom_ciutat varchar(50) NOT NULL,
+    codi_postal numeric(5,0) NOT NULL,
+    PRIMARY KEY (dni),
+    UNIQUE(telefon),
+    UNIQUE(correu_electronic),
+    FOREIGN KEY (nom_ciutat, codi_postal) references Ciutats(nom, codi_postal) on update cascade on delete restrict
+);
+
+CREATE TABLE Pagaments(
+    data date NOT NULL,
+    client varchar(9) NOT NULL,	
+    Pagament_efectuat bool,
+    PRIMARY KEY (data, client),
+    FOREIGN KEY (client) references Clients(dni) on update cascade on delete restrict
+);
+
+CREATE TABLE Quantificadors_Dietes(
+    quantificador numeric(4,2) NOT NULL,
+    dieta varchar(8) NOT NULL,
+   	client varchar(9) NOT NULL,
+    dietista varchar(9),
+    PRIMARY KEY (dieta, client),
+    FOREIGN KEY (dieta) references Dietes(codi) on update cascade on delete cascade,
+    FOREIGN KEY (client) references Clients(dni) on update cascade on delete cascade,
+    FOREIGN KEY (dietista) references Empleats(dni) on update cascade on delete restrict
+);
+
+CREATE TABLE Quantificadors_Pesos(
+	  quantificador numeric(4,2) NOT NULL,
+	  rutina varchar(8) NOT NULL,
+   	client varchar(9) NOT NULL,
+    entrenador varchar(9),
+    PRIMARY KEY (rutina, client),
+    FOREIGN KEY (rutina) references Rutines(codi) on update cascade on delete cascade,
+    FOREIGN KEY (client) references Clients(dni) on update cascade on delete cascade,
+    FOREIGN KEY (entrenador) references Empleats(dni) on update cascade on delete restrict
+);
+
+CREATE TABLE Apats(
+      dieta varchar(8) NOT NULL,
+      dia varchar(9) NOT NULL,
+      PRIMARY KEY (dieta,dia)
+);
+
+CREATE TABLE Franges_Horaries(
+      hora time NOT NULL,
+      dieta varchar(8) NOT NULL,
+      dia varchar(9) NOT NULL,
+      PRIMARY KEY (hora, dieta, dia),
+      FOREIGN KEY (dieta, dia) references Apats(dieta,dia) on update cascade on delete cascade
+);
+
+CREATE TABLE Quantitats_Aliments(
+      quantitat numeric(5, 2) NOT NULL,
+      unitats varchar(10) NOT NULL,
+      hora time NOT NULL,
+      dieta varchar(8) NOT NULL,
+      dia varchar(9) NOT NULL,
+      aliment varchar(50) NOT NULL,
+      PRIMARY KEY (hora, dieta, dia, aliment),
+      FOREIGN KEY (aliment) references Aliments(nom) on update cascade on delete cascade
+);
+
+CREATE TABLE Exercicis(
+    codi varchar(8) NOT NULL,
+    nom varchar(40) NOT NULL,
+    PRIMARY KEY (codi)
+);
+
+CREATE TABLE Entrenaments(
+    codi varchar(8) NOT NULL,
+    PRIMARY KEY (codi)
+);
+
+CREATE TABLE Entrenaments_diaris(
+    codi varchar(8) NOT NULL,
+    rutina varchar (8) NOT NULL,
+    dia varchar(9) NOT NULL,
+    PRIMARY KEY (codi),
+    UNIQUE(rutina, dia),
+    FOREIGN KEY (rutina) references Rutines(codi) on update cascade on delete cascade,
+    FOREIGN KEY (dia) references Dies(dia) on update cascade on delete cascade,
+    FOREIGN KEY (codi) references Entrenaments(codi) on update cascade on delete restrict
+);
+
+CREATE TABLE Entrenaments_Personals(
+    codi varchar(8) NOT NULL,
+    data date NOT NULL,
+    hora time NOT NULL,
+    client varchar(9) NOT NULL,
+    plantilla varchar(9) ,
+    PRIMARY KEY (codi),
+    UNIQUE(client, data, hora),
+    FOREIGN KEY (client) references Clients(dni) on update cascade on delete cascade,
+    FOREIGN KEY (plantilla) references Entrenaments_Diaris(codi) on update cascade on delete restrict,
+    FOREIGN KEY (codi) references Entrenaments(codi) on update cascade on delete cascade
+);
+
+CREATE TABLE Rondes(
+    codi varchar(8) NOT NULL,
+    ordre  numeric(2,0) NOT NULL,
+    entrenament varchar(9) NOT NULL,
+    exercici varchar(40) NOT NULL,
+    PRIMARY KEY (codi),
+    UNIQUE(entrenament, ordre),
+    FOREIGN KEY (entrenament) references Entrenaments(codi) on update cascade on delete cascade,
+    FOREIGN KEY (exercici) references Exercicis(codi) on update cascade on delete cascade
+);
+
+CREATE TABLE Series(
+    num_serie numeric(2, 0) NOT NULL,
+    pes  numeric (4,1) NOT NULL,
+    num_repeticions numeric(2,0),
+    duracio time,
+    ronda varchar(8) NOT NULL,
+    PRIMARY KEY (num_serie, ronda),
+    FOREIGN KEY (ronda) references Rondes(codi) on update cascade on delete cascade
+);
+
+CREATE TABLE Realitza_Exercicis(
+      exercici varchar(8) NOT NULL,
+      gimnas varchar(8) NOT NULL,
+      sala varchar(8) NOT NULL,
+      PRIMARY KEY (exercici, gimnas, sala),
+      FOREIGN KEY (sala, gimnas) references Sales(codi, codi_gimnas) on update cascade on delete cascade,
+      FOREIGN KEY (exercici) references Exercicis(codi) on update cascade on delete cascade
+);
+
+CREATE TABLE Participacions(
+      classe varchar(8) NOT NULL,
+      client varchar(9) NOT NULL,
+      PRIMARY KEY (classe, client),
+      FOREIGN KEY (client) references Clients(dni) on update cascade on delete cascade,
+      FOREIGN KEY (classe) references Classes(codi) on update cascade on delete cascade
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

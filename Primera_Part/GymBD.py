@@ -13,27 +13,29 @@ fake.add_provider(FoodProvider)
 
 ####Estas son los datos que meteremos
 num_ciutats = 300
-num_empleats = 6000
+num_empleats = 100000
 num_treballadors = 10000
-num_gimnasos = 350
-num_sales = 5000
-num_classes = 10000
-num_aliments = 200
-num_dietes = 200
-num_rutines = 200
-num_clients = 30000
+num_gimnasos = 2000
+num_sales = 60000
+num_classes = 150000
+num_aliments = 100000
+num_dietes = 90000
+num_rutines = 2000
+num_clients = 40000
 num_quantificador_dietes = 10000
 num_quantificador_rutines = 10000
-num_entrenaments = 50000
-num_apats = 50000
+num_entrenaments = 200000
+num_apats = 200000
 num_participacions = 10000
 sales_per_exercici = 1000
 num_exercicis = 300
+
 ##datos para hacer pruebas
+"""
 num_ciutats = 5
 num_empleats = 120
 num_treballadors = 140
-num_gimnasos = 6
+num_gimnasos = 20
 num_sales = 50
 num_classes = 100
 num_aliments = 20
@@ -46,11 +48,12 @@ num_participacions = 100
 num_entrenaments = 5
 num_apats = 50
 sales_per_exercici = 10
-num_exercicis = 10
+num_exercicis = 10  
+"""
 
 def create_ciutats(cur):
   print("%d ciutats will be inserted." % num_ciutats)
-  cur.execute("DROP TABLE IF EXISTS Ciutats CASCADE;")
+  cur.execute("DROP TABLE IF EXISTS Ciutats CASCADE")
   cur.execute("""CREATE TABLE Ciutats(
         nom varchar(50) NOT NULL,
         codi_postal numeric(5,0) NOT NULL,
@@ -68,19 +71,17 @@ def create_ciutats(cur):
     count = cur.fetchone()[0]
 
     if count == 0:
-        cities_inserted += 1
         try:
             cur.execute("INSERT INTO ciutats VALUES ('%s', '%s')" % (nom, codi_postal))
+            cities_inserted += 1
         except psycopg2.IntegrityError as e:
             conn.rollback()
             #print("Error inserting (%s, %s). Error information: %s" % (nom, codi_postal, e))
 
-        cities_inserted += 1
-
-
+        
 def create_empleats(cur):
   print("%d empleats will be inserted." % num_empleats)
-  cur.execute("DROP TABLE IF EXISTS Empleats CASCADE;")
+  cur.execute("DROP TABLE IF EXISTS Empleats CASCADE")
   cur.execute("""CREATE TABLE Empleats(
         dni varchar(9) NOT NULL,
         tipus varchar(20) NOT NULL,
@@ -133,51 +134,22 @@ def create_empleats(cur):
 
       nom_ciutat   = result[0]
       codi_postal = result[1]
-
+    cur.execute("SELECT codi FROM Gimnasos WHERE codi_postal = '%s' ORDER BY RANDOM() LIMIT 1"% str(codi_postal),)
+    gimnas = cur.fetchone()[0]
       #empleats_inserted += 1
-      try:
-          cur.execute("INSERT INTO Empleats VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (dni, tipus, sou, nom, cognoms, compte_bancari, telefon, naixement, sexe, horaris, nom_ciutat, codi_postal))
-      except psycopg2.IntegrityError as e:
-          conn.rollback()
-          #print("Error inserting (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s). Error information: %s" % (dni, tipus, sou, nom, cognoms, compte_bancari, telefon, naixement, sexe, horaris, nom_ciutat, codi_postal, e))
- 
-    empleats_inserted += 1
-
-
-def create_treballadors(cur):
-  print("%d Treballadors will be inserted." % num_treballadors)
-  ################################################################################quitar después de pruebas
-  cur.execute("DROP TABLE IF EXISTS Treballadors CASCADE;")
-  cur.execute("""CREATE TABLE Treballadors(
-      gimnas varchar(8) NOT NULL,
-      empleat varchar(9) NOT NULL,
-      PRIMARY KEY (gimnas, empleat),
-      FOREIGN KEY (gimnas) references Gimnasos(codi) on update cascade on delete cascade,
-      FOREIGN KEY (empleat) references Empleats(dni) on update cascade on delete cascade
-  );""")
-
-  treballadors_inserted = 0
-  while treballadors_inserted < num_treballadors:
-    print(treballadors_inserted+1, end = '\r')
-
-    # seleccionem un empleat aleatori
-    cur.execute("SELECT e.dni, g.codi FROM Empleats e JOIN Gimnasos g ON e.codi_postal = g.codi_postal ORDER BY RANDOM() LIMIT 1")
-    variable = cur.fetchone()
-    empleat = variable[0]
-    gimnas = variable[1]
-
     try:
-        cur.execute("INSERT INTO Treballadors VALUES ('%s', '%s')" % (gimnas, empleat))
-        treballadors_inserted += 1
+        cur.execute("INSERT INTO Empleats VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (dni, tipus, sou, nom, cognoms, compte_bancari, telefon, naixement, sexe, horaris, nom_ciutat, codi_postal))
+        empleats_inserted += 1
+        cur.execute("INSERT INTO Treballadors VALUES ('%s', '%s')" % (gimnas, dni))
+
     except psycopg2.IntegrityError as e:
         conn.rollback()
-        print("Error inserting (%s, %s). Error information: %s" % (gimnas, empleat, e))
-
-    
+          #print("Error inserting (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s). Error information: %s" % (dni, tipus, sou, nom, cognoms, compte_bancari, telefon, naixement, sexe, horaris, nom_ciutat, codi_postal, e))
 
 
 def create_gimnasos(cur):
   print("%d Gimnasos will be inserted." % num_gimnasos)
+  
   cur.execute("DROP TABLE IF EXISTS Gimnasos CASCADE;")
   cur.execute("""CREATE TABLE Gimnasos (
         codi varchar(8) NOT NULL,
@@ -209,17 +181,33 @@ def create_gimnasos(cur):
     print(gimnasos_inserted+1, end = '\r')
 
     codi = ''.join(fake.random_letters(length=4)) + str(fake.random_int(min=1000, max=9999))
-
     adreca = fake.street_address()
     telefon = fake.random_int(min=600000000, max=699999999)
     correu_electronic = fake.email()
-
     # Select a random city from the Ciutats table
     cur.execute("SELECT nom, codi_postal FROM Ciutats ORDER BY RANDOM() LIMIT 1")
     result = cur.fetchone()
     nom_ciutat = result[0]
     codi_postal = result[1]
 
+
+    # Generate unique dni
+    dni = str(randint(10000000, 99999999)) + fake.random_letter()
+    #tipus = fake.random_element(elements=('encarregat', 'treballador'))
+    tipus = 'encarregat'
+    sou = fake.pyfloat(left_digits=4, right_digits=2, positive=True, min_value=900, max_value=3800)
+    nom = fake.first_name()
+    cognoms = fake.last_name() + ' ' + fake.last_name()
+    telefon = fake.unique.random_number(digits=9) 
+    compte_bancari = fake.iban()
+    naixement = fake.date_of_birth(minimum_age=16, maximum_age=90)
+    sexe = fake.random_element(elements=('H', 'D'))
+    horaris = fake.random_element(elements=('7:00 - 15:00', '8:00 - 16:00', '9:00 - 17:00', '15:00 - 20:00', '16:00 - 21:00', '17:00 - 22:00'))
+
+
+    # Insert the encarregat
+    cur.execute("INSERT INTO Empleats VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (dni, tipus, sou, nom, cognoms, compte_bancari, telefon, naixement, sexe, horaris, nom_ciutat, codi_postal))
+    """
     tipus = 'encarregat'
     while tipus == 'encarregat':
       #print(nom_ciutat, codi_postal)
@@ -229,21 +217,21 @@ def create_gimnasos(cur):
       #print(result)
       encarregat = result[0]
       tipus = result[1]
+    
 
     # update the encarregat to tipus = 'Encarregat'
     cur.execute("UPDATE Empleats SET tipus = 'Encarregat' WHERE dni = '%s';" % (encarregat,))
+    """
 
     try:
-        cur.execute("INSERT INTO Gimnasos VALUES (%s, %s, %s, %s, %s, %s, %s)", (codi, adreca, telefon, correu_electronic, nom_ciutat, codi_postal, encarregat))
+        cur.execute("INSERT INTO Gimnasos VALUES (%s, %s, %s, %s, %s, %s, %s)", (codi, adreca, telefon, correu_electronic, nom_ciutat, codi_postal, dni))
         # añadir en la tabla treballadors a este encargado y este gym 
-        cur.execute("INSERT INTO Treballadors VALUES (%s, %s)", (codi, encarregat))
-
+        cur.execute("INSERT INTO Treballadors VALUES (%s, %s)", (codi, dni))
+        gimnasos_inserted += 1
     except psycopg2.IntegrityError as e:
         conn.rollback()
         #print("Error inserting (%s, %s, %s, %s, %s, %s, %s). Error information: %s" % (codi, adreca, telefon, correu_electronic, nom_ciutat, codi_postal, encarregat, e))
-
-    gimnasos_inserted += 1
-
+ 
 
 def create_sales(cur):
   print("%d Sales will be inserted." % num_sales)
@@ -356,26 +344,519 @@ def create_dies(cur):
 
 def create_aliments(cur):
   print("%d Aliments will be inserted." % num_aliments)
-  cur.execute("DROP TABLE IF EXISTS Aliments CASCADE;")
+  cur.execute("DROP TABLE IF EXISTS Aliments CASCADE")
   cur.execute("""CREATE TABLE Aliments(
     nom varchar(50) NOT NULL,
     PRIMARY KEY (nom)
   );""")
   aliments_inserted = 0
 
-  while aliments_inserted < num_aliments:
+  ingredients = [
+    "Achacha",
+    "Adzuki Beans",
+    "Agar",
+    "Agave Syrup",
+    "Ajowan Seed",
+    "Albacore Tuna",
+    "Alfalfa",
+    "Allspice",
+    "Almond oil",
+    "Almonds",
+    "Amaranth",
+    "Amchur",
+    "Anchovies",
+    "Anchovies",
+    "Aniseed",
+    "Annatto seed",
+    "Apple Cider Vinegar",
+    "Apple juice",
+    "Apple Juice Concentrate",
+    "Apples",
+    "Bonza",
+    "Apples",
+    "Apricots",
+    "Arborio rice",
+    "Arrowroot",
+    "Artichoke",
+    "Arugula",
+    "Asafoetida",
+    "Asian Greens",
+    "Asian Noodles",
+    "Asparagus",
+    "Aubergine",
+    "Avocado",
+    "Avocado Oil",
+    "Avocado Spread",
+    "Bacon",
+    "Baking Powder",
+    "Baking Soda",
+    "Balsamic Vinegar",
+    "Bamboo Shoots",
+    "Banana",
+    "Barberry",
+    "Barley",
+    "Barramundi",
+    "Basil Basmati rice",
+    "Bay Leaves",
+    "Bean Shoots",
+    "Bean Sprouts",
+    "Beans",
+    "Green beans",
+    "Beef",
+    "Beetroot",
+    "Berries",
+    "Black Eyed Beans",
+    "Blackberries",
+    "Blood oranges",
+    "Blue Cheese",
+    "Blue Eye Trevalla",
+    "Blue Swimmer Crab",
+    "Blueberries",
+    "Bocconcini",
+    "Bok Choy",
+    "Bonito Flakes",
+    "Borlotti Beans",
+    "Brazil Nut",
+    "Bran",
+    "Bread",
+    "RyeBread",
+    "Sour Dough Bread",
+    "SpeltBread",
+    "WhiteBread",
+    "Wholegrain Bread",
+    "Wholemeal",
+    "Brie",
+    "Broccoli",
+    "Broccolini",
+    "Brown Rice",
+    "Brown rice vinegar",
+    "Brussels Sprouts",
+    "Buckwheat",
+    "Buckwheat Noodles",
+    "BulghurBurghul",
+    "Bush Tomato",
+    "Butter",
+    "Butter Beans",
+    "Buttermilk",
+    "Butternut lettuce",
+    "Butternut pumpkin",
+    "Cabbage",
+    "Cacao",
+    "Cake",
+    "Calamari",
+    "Camellia Tea Oil",
+    "Camembert",
+    "Camomile",
+    "Candle Nut",
+    "Cannellini Beans",
+    "Canola Oil",
+    "Cantaloupe",
+    "Capers",
+    "Capsicum",
+    "Starfruit",
+    "Caraway Seed",
+    "Cardamom",
+    "CarobCarrot",
+    "Carrot",
+    "Cashews",
+    "Cassia bark",
+    "Cauliflower",
+    "Cavalo",
+    "Cayenne",
+    "Celery",
+    "Celery Seed",
+    "Cheddar",
+    "Cherries",
+    "Cherries",
+    "Chestnut",
+    "Chestnut",
+    "Chia seeds",
+    "Chicken",
+    "Chickory",
+    "Chickpea",
+    "Chilli Pepper",
+    "FreshChillies",
+    "dried Chinese Broccoli",
+    "Chinese Cabbage",
+    "Chinese Five Spice",
+    "Chives",
+    "Dark Chocolate",
+    "MilkChocolate",
+    "Choy Sum",
+    "Cinnamon",
+    "Clams",
+    "Cloves",
+    "Cocoa powder",
+    "Coconut",
+    "Coconut Oil",
+    "Coconut water",
+    "Coffee",
+    "Corella Pear",
+    "Coriander Leaves",
+    "Coriander Seed",
+    "Corn Oil",
+    "Corn Syrup",
+    "Corn Tortilla",
+    "Cornichons",
+    "Cornmeal",
+    "Cos lettuce",
+    "Cottage Cheese",
+    "Cous Cous",
+    "Crabs",
+    "Cranberry",
+    "Cream",
+    "Cream Cheese",
+    "Cucumber",
+    "Cumin",
+    "Cumquat",
+    "Currants",
+    "Curry Leaves",
+    "Curry Powder",
+    "Custard Apples",
+    "Custard ApplesDaikon",
+    "Dandelion",
+    "Dashi",
+    "Dates",
+    "Dill",
+    "Dragonfruit",
+    "Dried Apricots",
+    "Duck",
+    "Edam",
+    "Edamame",
+    "Eggplant",
+    "Eggs",
+    "Elderberry",
+    "Endive",
+    "English Spinach",
+    "Extra Virgin Olive Oil",
+    "Farmed Prawns",
+    "Feijoa",
+    "Fennel",
+    "Fennel Seeds",
+    "Fenugreek",
+    "Feta",
+    "Figs",
+    "File Powder",
+    "Fingerlime",
+    "Fish Sauce",
+    "Flathead",
+    "Flaxseed",
+    "Flaxseed Oil",
+    "Flounder",
+    "Flour",
+    "Besan",
+    "Buckwheat Flour",
+    "FlourOat",
+    "FlourPotato",
+    "FlourRice",
+    "Brown Flour",
+    "WhiteFlour",
+    "SoyFlour",
+    "Tapioca Flour",
+    "UnbleachedFlour",
+    "Wholewheat flour",
+    "Freekeh",
+    "French eschallots",
+    "Fromage Blanc",
+    "Fruit",
+    "Galangal",
+    "Garam Masala",
+    "Garlic",
+    "Garlic",
+    "Chives",
+    "GemGinger",
+    "Goat Cheese",
+    "Goat Milk",
+    "Goji Berry",
+    "Grape Seed Oil",
+    "Grapefruit",
+    "Grapes",
+    "Green Chicken Curry",
+    "Green Pepper",
+    "Green Tea",
+    "Green Tea noodles",
+    "Greenwheat Freekeh",
+    "Gruyere",
+    "Guava",
+    "Gula MelakaHaloumiHam",
+    "Haricot Beans",
+    "Harissa",
+    "Hazelnut",
+    "Hijiki",
+    "Hiramasa Kingfish",
+    "Hokkien Noodles",
+    "Honey",
+    "Honeydew melon",
+    "Horseradish",
+    "Hot smoked salmon",
+    "Hummus",
+    "Iceberg lettuce",
+    "Incaberries",
+    "Jarrahdale pumpkin",
+    "Jasmine rice",
+    "Jelly",
+    "Jerusalem Artichoke",
+    "Jewfish",
+    "Jicama",
+    "Juniper Berries",
+    "Lime Leaves",
+    "Kale",
+    "Kangaroo",
+    "Kecap Manis",
+    "Kenchur",
+    "Kidney Beans",
+    "Kidneys",
+    "Kiwi Fruit",
+    "Kiwiberries",
+    "Kohlrabi",
+    "Kokam",
+    "Kombu",
+    "Koshihikari rice",
+    "Kudzu",
+    "Kumera",
+    "Lamb",
+    "Lavender Flowers",
+    "Leeks",
+    "Lemon",
+    "Lemongrass",
+    "Lentils",
+    "Lettuce",
+    "Licorice",
+    "Limes",
+    "Liver",
+    "Lobster",
+    "Longan",
+    "Loquats",
+    "Lotus Root",
+    "Lychees",
+    "Lychees",
+    "Macadamia Nut",
+    "Macadamia oil",
+    "Mace",
+    "Mackerel",
+    "Mackerel",
+    "Tinned",
+    "Mahi mahi",
+    "Mahlab",
+    "Malt vinegar",
+    "Mandarins",
+    "Mango",
+    "Mangosteens",
+    "Maple Syrup",
+    "Margarine",
+    "Marigold",
+    "Marjoram",
+    "Mastic",
+    "Melon",
+    "Milk",
+    "Mint",
+    "Miso",
+    "Molasses",
+    "Monkfish",
+    "Morwong",
+    "Mountain Bread",
+    "Mozzarella",
+    "Muesli",
+    "Mulberries",
+    "Mullet",
+    "Mung Beans",
+    "Flat Mushrooms",
+    "Brown Mushrooms",
+    "Common Cultivated Mushrooms",
+    "Enoki Mushrooms",
+    "Oyster Mushrooms",
+    "Shiitake Mushrooms",
+    "Mussels",
+    "Mustard",
+    "Mustard Seed",
+    "Nashi Pear",
+    "Nasturtium",
+    "Nectarines",
+    "Nori",
+    "Nutmeg",
+    "Nutritional Yeast",
+    "Nuts",
+    "Oatmeal",
+    "Oats",
+    "Octopus",
+    "Okra",
+    "Olive Oil",
+    "Olives",
+    "Omega Spread",
+    "Onion",
+    "Oranges",
+    "Oregano",
+    "Oyster Sauce",
+    "Oysters",
+    "Pear",
+    "Pandanus leaves",
+    "Papaw",
+    "Papaya",
+    "Paprik",
+    "Parmesan cheese",
+    "Parrotfish",
+    "Parsley",
+    "Parsnip",
+    "Passionfruit",
+    "Pasta",
+    "Peaches",
+    "Peanuts",
+    "Pear Juice",
+    "Pears",
+    "Peas",
+    "Pecan Nut",
+    "Pecorino",
+    "PepitasPepper",
+    "Szechuan Pepperberry",
+    "Peppercorns",
+    "Peppermint",
+    "Peppers",
+    "Persimmon",
+    "Pine Nut",
+    "Pineapple",
+    "Pinto Beans",
+    "Pistachio Nut",
+    "Plums",
+    "Polenta",
+    "Pomegranate",
+    "Poppy Seed",
+    "Porcini mushrooms",
+    "Pork",
+    "Potatoes",
+    "Provolone",
+    "Prunes",
+    "Pumpkin",
+    "Pumpkin Seed",
+    "Purple carrot",
+    "Purple RiceQuail",
+    "Quark Quinc",
+    "Quinoa",
+    "Radicchio",
+    "Radish",
+    "Raisin",
+    "Raspberry",
+    "Red cabbage",
+    "Red Lentils",
+    "Red Pepper",
+    "Red Wine Vinegar",
+    "Redfish",
+    "Rhubarb",
+    "Rice Noodles",
+    "Rice paper",
+    "Rice Syrup",
+    "Ricemilk",
+    "Ricotta",
+    "Rockmelon",
+    "Rose Water",
+    "Rosemary",
+    "Rye",
+    "Safflower Oil",
+    "Saffron",
+    "Sage",
+    "Sake",
+    "Salmon",
+    "Sardines",
+    "Sausages",
+    "Scallops",
+    "Sea Salt",
+    "Semolina",
+    "Sesame Oil",
+    "Sesame seed",
+    "Sesame Seeds",
+    "Shark",
+    "Silverbeet",
+    "Slivered Almonds",
+    "Smoked Trout",
+    "Snapper",
+    "Snowpea sprouts",
+    "Snowpeas",
+    "Soba",
+    "Soy Beans",
+    "Soy Milk",
+    "Soy Sauce",
+    "Soy",
+    "Sprouts",
+    "Soymilk",
+    "Spearmint",
+    "Spelt",
+    "Spinach",
+    "Spring Onions",
+    "Squash",
+    "Squid",
+    "Star Anise",
+    "Star Fruit",
+    "Stevia",
+    "Beef Stock",
+    "Chicken Stock",
+    "Fish Stock",
+    "Vegetable Stock",
+    "Strawberries",
+    "Sugar",
+    "Sultanas",
+    "Sun dried tomatoes",
+    "Sunflower Oil",
+    "Sunflower Seeds",
+    "SwedeSweet Chilli Sauce",
+    "Sweet Potato",
+    "Swiss Chard",
+    "SwordfishTabasco",
+    "Tahini",
+    "Taleggio cheese",
+    "Tamari",
+    "Tamarillo",
+    "Tangelo",
+    "Tapioca",
+    "Tarragon",
+    "Tea",
+    "Tea Oil",
+    "Tempeh",
+    "ThymeTofu",
+    "Tom Yum",
+    "Tomatoes",
+    "Trout",
+    "Tuna",
+    "Turkey",
+    "Turmeric",
+    "Turnips",
+    "Vanilla Beans",
+    "Vegetable Oil",
+    "Vegetable spaghetti",
+    "Vermicelli Noodles",
+    "Vinegar",
+    "Wakame",
+    "Walnut",
+    "Warehou",
+    "Wasabi",
+    "Water",
+    "Watercress",
+    "Watermelon",
+    "Wattleseed",
+    "Wheat",
+    "Wheatgrass juice",
+    "White rice",
+    "White wine vinegar",
+    "Whiting Wild Rice",
+    "William Pear",
+    "RedWine",
+    "White Wine",
+    "Yeast",
+    "Yellow Papaw",
+    "Yellowtail Kingfish",
+    "Yoghurt",
+    "Yogurt",
+    "Zucchini",
+    ]
+
+  for i in ingredients:
       print(aliments_inserted+1, end = '\r')
       
-      aliment = fake.ingredient()     
-
       try:
-          cur.execute("INSERT INTO Aliments VALUES ('%s')" % (aliment,))
+          cur.execute("INSERT INTO Aliments VALUES ('%s')" % (i))
+          aliments_inserted += 1
       except psycopg2.IntegrityError as e:
           conn.rollback()
           #print("Error inserting ('%s')" % (aliment,))        
-      
-      aliments_inserted += 1
-
+        
 
 def create_dietes(cur):
   print("%d Dietes will be inserted." % num_dietes)
@@ -484,7 +965,7 @@ def create_clients(cur):
     estat = random.choices(["O", "X"], weights=[0.9, 0.1], k=1)[0]
 	# O vol dir normal i X que no ha pagat
     nom = fake.first_name()
-    correu = nom+str(fake.unique.random_number(digits=3))+fake.random_element(elements=("@gmail.com", "@gmail.es", "@xtec.cat", "@upc.edu", "@hotmail.com", "@yahoo.com"))
+    correu = fake.email()
     cognoms = fake.last_name() + ' ' + fake.last_name()
     telefon = fake.unique.random_number(digits=9) 
     compte_bancari = fake.iban()
@@ -501,12 +982,13 @@ def create_clients(cur):
 
     try:
         cur.execute("INSERT INTO Clients VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (dni, inici, adreca, correu, nom, cognoms, compte_bancari, telefon, naixement, sexe, pes, alcada, greix, massa_ossia, massa_muscular, estat, nom_ciutat, codi_postal))
-    
+        clients_inserted += 1
+        conn.commit()
     except psycopg2.IntegrityError as e:
         conn.rollback()
         #print("Error inserting (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s). Error information: %s" % (dni, inici, adreca, correu, nom, cognoms, compte_bancari, telefon, naixement, sexe, pes, alcada, greix, massa_ossia, massa_muscular, estat, nom_ciutat, codi_postal))
 
-    clients_inserted += 1
+    
     current_ciutat += 1
 
 
@@ -520,31 +1002,34 @@ def create_pagaments(cur):
     PRIMARY KEY (data, client),
     FOREIGN KEY (client) references Clients(dni) on update cascade on delete restrict
   );""")
+  conn.commit()
 
   cur.execute("SELECT dni, inici, estat FROM Clients")
   clients = cur.fetchall()
   days = []
   for client in clients:
-    days.append(llista_laborables_periode(client[1], dt.date.today()))
+    days = llista_laborables_periode(client[1], dt.date.today())
 
-  for day in days:
-    for dia in day:
+    for day in days:
+
       try:
-        cur.execute("INSERT INTO Pagaments VALUES ('%s', '%s', '%s')" % (dia, client[0], True))
+        cur.execute("INSERT INTO Pagaments VALUES ('%s', '%s', '%s')" % (day, client[0], True))
       except psycopg2.IntegrityError as e:
         conn.rollback()
         #print("Error inserting (%s, %s, %s). Error information: %s" % (dia, client[0], True, e))
 
-    if (client[2] == 'X'):
-      try:
-        cur.execute("""UPDATE Pagaments 
-          SET Pagament_efectuat = False
-          WHERE client = 'dni' AND data = (
-          SELECT MAX(data) FROM Pagaments WHERE client = 'dni'
-        );""")
-      except psycopg2.IntegrityError as e:
-        conn.rollback()
-        #print("Error updating last date for client "+str(client))
+      if (client[2] == 'X'):
+        try:
+          cur.execute("""UPDATE Pagaments 
+            SET Pagament_efectuat = False
+            WHERE client = 'dni' AND data = (
+            SELECT MAX(data) FROM Pagaments WHERE client = 'dni'
+          );""")
+          
+        except psycopg2.IntegrityError as e:
+          conn.rollback()
+          #print("Error updating last date for client "+str(client))
+    conn.commit()
 
 
 def create_quantificador_dietes(cur):
@@ -585,7 +1070,7 @@ def create_quantificador_dietes(cur):
 
 def create_quantificador_rutines(cur):
   print("%d Quantificadors_Pesos will be inserted." % num_quantificador_rutines)
-  cur.execute("DROP TABLE IF EXISTS Quantificadors_Pesos CASCADE;")
+  cur.execute("DROP TABLE IF EXISTS Quantificadors_Pesos CASCADE")
   cur.execute("""CREATE TABLE Quantificadors_Pesos(
 	  quantificador numeric(4,2) NOT NULL,
 	  rutina varchar(8) NOT NULL,
@@ -623,31 +1108,31 @@ def create_quantificador_rutines(cur):
 def create_apats(cur):
 
   print("%d Apats will be inserted." % num_apats)
-  cur.execute("""DROP TABLE IF EXISTS Apats CASCADE;
-    DROP TABLE IF EXISTS Franges_Horaries CASCADE;
-    DROP TABLE IF EXISTS Quantitats_Aliments CASCADE;
+  cur.execute("""DROP TABLE IF EXISTS Quantitats_Aliments CASCADE;""")
+  cur.execute("""DROP TABLE IF EXISTS Franges_Horaries CASCADE;""")
+  cur.execute("""DROP TABLE IF EXISTS Apats CASCADE;""")
 
-    CREATE TABLE Apats(
+  cur.execute("""CREATE TABLE Apats(
       dieta varchar(8) NOT NULL,
       dia varchar(9) NOT NULL,
       PRIMARY KEY (dieta,dia)
-    ); 
+    ); """)
 
-    CREATE TABLE Franges_Horaries(
+  cur.execute("""CREATE TABLE Franges_Horaries(
       hora time NOT NULL,
       dieta varchar(8) NOT NULL,
       dia varchar(9) NOT NULL,
       PRIMARY KEY (hora, dieta, dia),
       FOREIGN KEY (dieta, dia) references Apats(dieta,dia) on update cascade on delete cascade
-    );
+    );""")
 
-    CREATE TABLE Quantitats_Aliments(
+  cur.execute("""CREATE TABLE Quantitats_Aliments(
       quantitat numeric(5, 2) NOT NULL,
       unitats varchar(10) NOT NULL,
       hora time NOT NULL,
       dieta varchar(8) NOT NULL,
       dia varchar(9) NOT NULL,
-      aliment varchar(20) NOT NULL,
+      aliment varchar(50) NOT NULL,
       PRIMARY KEY (hora, dieta, dia, aliment),
       FOREIGN KEY (aliment) references Aliments(nom) on update cascade on delete cascade
     );""")
@@ -663,9 +1148,10 @@ def create_apats(cur):
     # seleccionem una dieta aleatoria
     cur.execute("SELECT codi FROM Dietes ORDER BY RANDOM() LIMIT 1")
     dieta = cur.fetchone()[0]
-
+    #print(dieta, dies[n_dia])
     try:
             cur.execute("INSERT INTO Apats VALUES ('%s', '%s')" % (dieta, dies[n_dia]))
+            conn.commit()
 
             nombre_franges = fake.random_int(min=1, max=7)
             for i in range(nombre_franges):
@@ -678,14 +1164,17 @@ def create_apats(cur):
   
                 try: 
                     cur.execute("INSERT INTO Franges_Horaries VALUES ('%s', '%s', '%s')" % (hora, dieta, dies[n_dia]))
+                    conn.commit()
                     nombre_quantitats = fake.random_int(min=1, max=10)
                     for j in range(nombre_quantitats):
                         cur.execute("SELECT nom FROM Aliments ORDER BY RANDOM() LIMIT 1")
                         aliment = cur.fetchone()[0]
                         quantitat = fake.pyfloat(left_digits=3, right_digits=2, positive=True, min_value=0.5, max_value=180)
+                        quantitat = round(quantitat, 2)
                         unitats = fake.random_element(elements=('litres', 'grams', 'kilograms', 'unitats', 'dotzenes'))
                         try: 
                           cur.execute("INSERT INTO Quantitats_Aliments VALUES ('%s', '%s', '%s', '%s', '%s', '%s')" % (quantitat, unitats, hora, dieta, dies[n_dia], aliment))
+                          conn.commit()
                         except psycopg2.IntegrityError as e:
                           conn.rollback()
                           #print("Error inserting ('%s', '%s', '%s', '%s', '%s', '%s'). Error information: %s" % (quantitat, unitats, hora, dieta, dies[n_dia], aliment, e))
@@ -695,7 +1184,7 @@ def create_apats(cur):
 
     except psycopg2.IntegrityError as e:
             conn.rollback()
-            print("Error inserting (%s, '%s')." % (dieta, dies[n_dia]))
+            #print("Error inserting (%s, '%s')." % (dieta, dies[n_dia]))
 
     n_dia += 1
     apats_inserted += 1
@@ -717,22 +1206,17 @@ def create_exercicis(cur):
     codi  = ''.join(fake.random_letters(length=4)) + str(fake.random_int(min=1000, max=9999))
 
     # seleccionem un nom aleatori
-    nom = fake.random_element(elements=('Bench press', 'Squats', 'Deadlifts', 'Pull-ups', 'Push-ups', 'Lunges', 'Bicep curls', 'Tricep extensions', 'Shoulder press', 'Lat pull-downs', 'Crunches', 'Planks', 'Side planks', 'Russian twists', 'Leg press', 'Calf raises', 'Hammer curls', 'Dumbbell flys', 'Incline bench press', 'Decline bench press', 'Arnold press', 'Military press', 'Dips', 'Jumping jacks', 'Burpees', 'Mountain climbers', 'Step-ups', 'Leg curls', 'Leg extensions', 'Seated rows', 'Pullovers', 'Renegade rows', 'Reverse flys', 'Good mornings', 'Reverse lunges', 'Hammer strength machines', 'Stairmaster', 'Stationary bike', 'Treadmill', 'Elliptical machine', 'Rowing machine', 'Assault bike', 'Kettlebell swings', 'Box jumps', 'Wall balls', 'Thrusters', 'Clean and jerk', 'Snatch', 'Front squats', 'Back squats', 'Zercher squats', 'Sumo deadlifts', 'Romanian deadlifts', 'Goblet squats', 'Overhead squats', 'Barbell lunges', 'Reverse grip pull-ups', 'Wide grip pull-ups', 'Close grip pull-downs', 'Wide grip pull-downs', 'Neutral grip pull-downs', 'Incline dumbbell press', 'Decline dumbbell press', 'Dumbbell pullovers', 'Straight-arm pulldowns', 'Close grip bench press', 'Skull crushers', 'Seated dumbbell press', 'Standing dumbbell press', 'Standing cable flys', 'Seated cable flys', 'Standing calf raises', 'Seated calf raises', 'Smith machine squats', 'Smith machine lunges', 'Smith machine bench press', 'Smith machine incline bench press', 'Smith machine decline bench press', 'Hip thrusts', 'Glute bridges', 'Donkey kicks', 'Fire hydrants', 'Side-lying leg lifts', 'Hip abductor machine', 'Hip adductor machine', 'Leg press machine', 'Hack squat machine', 'Standing leg curls', 'Seated leg curls', 'Standing leg extensions',
+    nom = ['Bench press', 'Squats', 'Deadlifts', 'Pull-ups', 'Push-ups', 'Lunges', 'Bicep curls', 'Tricep extensions', 'Shoulder press', 'Lat pull-downs', 'Crunches', 'Planks', 'Side planks', 'Russian twists', 'Leg press', 'Calf raises', 'Hammer curls', 'Dumbbell flys', 'Incline bench press', 'Decline bench press', 'Arnold press', 'Military press', 'Dips', 'Jumping jacks', 'Burpees', 'Mountain climbers', 'Step-ups', 'Leg curls', 'Leg extensions', 'Seated rows', 'Pullovers', 'Renegade rows', 'Reverse flys', 'Good mornings', 'Reverse lunges', 'Hammer strength machines', 'Stairmaster', 'Stationary bike', 'Treadmill', 'Elliptical machine', 'Rowing machine', 'Assault bike', 'Kettlebell swings', 'Box jumps', 'Wall balls', 'Thrusters', 'Clean and jerk', 'Snatch', 'Front squats', 'Back squats', 'Zercher squats', 'Sumo deadlifts', 'Romanian deadlifts', 'Goblet squats', 'Overhead squats', 'Barbell lunges', 'Reverse grip pull-ups', 'Wide grip pull-ups', 'Close grip pull-downs', 'Wide grip pull-downs', 'Neutral grip pull-downs', 'Incline dumbbell press', 'Decline dumbbell press', 'Dumbbell pullovers', 'Straight-arm pulldowns', 'Close grip bench press', 'Skull crushers', 'Seated dumbbell press', 'Standing dumbbell press', 'Standing cable flys', 'Seated cable flys', 'Standing calf raises', 'Seated calf raises', 'Smith machine squats', 'Smith machine lunges', 'Smith machine bench press', 'Smith machine incline bench press', 'Smith machine decline bench press', 'Hip thrusts', 'Glute bridges', 'Donkey kicks', 'Fire hydrants', 'Side-lying leg lifts', 'Hip abductor machine', 'Hip adductor machine', 'Leg press machine', 'Hack squat machine', 'Standing leg curls', 'Seated leg curls', 'Standing leg extensions',
     'Seated leg extensions', 'Cable rows', 'One-arm dumbbell rows', 'Kroc rows', 'Deadlift variations',
-    'Reverse grip curls', 'Preacher curls', 'Concentration curls', 'Hanging leg raises', 'Ab wheel rollouts', 'Dragon flags', 'Windshield wipers'))
+    'Reverse grip curls', 'Preacher curls', 'Concentration curls', 'Hanging leg raises', 'Ab wheel rollouts', 'Dragon flags', 'Windshield wipers']
 
-    if num_exercicis > 1:
-        cur.execute("SELECT count(*) FROM Exercicis where nom = '%s'" % nom)
-
-        if cur.fetchone()[0] > 0:            
-            cur.execute("SELECT codi FROM Exercicis where nom = '%s'" % nom)
-            codi = cur.fetchone()[0]
-
-    try:
-            cur.execute("INSERT INTO Exercicis VALUES ('%s', '%s')" % (codi, nom))
-    except psycopg2.IntegrityError as e:
-            conn.rollback()
-            #print("Error inserting (%s, %s). Error information: %s" % (codi, nom, e))
+    if exercicis_inserted < len(nom):
+        
+      try:
+              cur.execute("INSERT INTO Exercicis VALUES ('%s', '%s')" % (codi, nom[exercicis_inserted]))
+      except psycopg2.IntegrityError as e:
+              conn.rollback()
+              #print("Error inserting (%s, %s). Error information: %s" % (codi, nom, e))
 
     exercicis_inserted += 1
 
@@ -740,11 +1224,11 @@ def create_exercicis(cur):
 def create_entrenaments(cur):
 
   print("%d Entrenaments will be inserted." % num_entrenaments)
-  cur.execute("""DROP TABLE IF EXISTS Entrenaments CASCADE;
-    DROP TABLE IF EXISTS Entrenaments_diaris CASCADE;
-    DROP TABLE IF EXISTS Entrenaments_Personals CASCADE;
+  cur.execute("""    DROP TABLE IF EXISTS Series CASCADE;
     DROP TABLE IF EXISTS Rondes CASCADE;
-    DROP TABLE IF EXISTS Series CASCADE;
+    DROP TABLE IF EXISTS Entrenaments_Personals CASCADE;
+    DROP TABLE IF EXISTS Entrenaments_diaris CASCADE;
+    DROP TABLE IF EXISTS Entrenaments CASCADE;
 
     CREATE TABLE Entrenaments(
     codi varchar(8) NOT NULL,
@@ -794,14 +1278,16 @@ def create_entrenaments(cur):
     ronda varchar(8) NOT NULL,
     PRIMARY KEY (num_serie, ronda),
     FOREIGN KEY (ronda) references Rondes(codi) on update cascade on delete cascade
-  );""")
+  )""")
 
-  entrenaments_inserted = 0.0
+  entrenaments_inserted = 0
   while entrenaments_inserted < num_entrenaments:
     print(entrenaments_inserted+1, end = '\r')
     codi = ''.join(fake.random_letters(length=4)) + str(fake.random_int(min=1000, max=9999))
     try:
       cur.execute("INSERT INTO Entrenaments VALUES ('%s')" % (codi,))
+      conn.commit()
+      fill_entrenament(cur, codi)
       if entrenaments_inserted > num_entrenaments*0.1:
             cur.execute("SELECT dni, inici FROM Clients ORDER BY RANDOM() LIMIT 1")
             result = cur.fetchone()
@@ -812,11 +1298,12 @@ def create_entrenaments(cur):
             start = fake.random_int(min=7, max=21)  # Hours
             time_str = f"{start}:00" 
             hora = datetime.strptime(time_str, "%H:%M").time()
-            cur.execute("SELECT codi FROM Entrenaments ORDER BY RANDOM() LIMIT 1")
+            cur.execute("SELECT codi FROM Entrenaments_diaris ORDER BY RANDOM() LIMIT 1")
             plantilla = cur.fetchone()[0]
             try:
                 cur.execute("INSERT INTO Entrenaments_Personals VALUES ('%s', '%s', '%s', '%s', '%s')" % (codi, data, hora, client, plantilla))
-                fill_entrenament(cur, codi)
+                conn.commit()
+                #fill_entrenament(cur, codi)
             except psycopg2.IntegrityError as e:
                 conn.rollback()
                 print("Error inserting ('%s', '%s', '%s', '%s', '%s'). Error information: %s" % (codi, data, hora, client, plantilla, e))
@@ -830,7 +1317,8 @@ def create_entrenaments(cur):
             for dia in dies:
                 try:
                     cur.execute("INSERT INTO Entrenaments_Diaris VALUES ('%s', '%s', '%s')" % (codi, rutina, dia))
-                    fill_entrenament(cur, codi)
+                    conn.commit()
+                    #fill_entrenament(cur, codi)
                 except psycopg2.IntegrityError as e:
                     conn.rollback()
                     print("Error inserting ('%s', '%s', '%s'). Error information: %s" % (codi, rutina, dia, e))
@@ -852,8 +1340,7 @@ def create_realitza_exercicis(cur):
       sala varchar(8) NOT NULL,
       PRIMARY KEY (exercici, gimnas, sala),
       FOREIGN KEY (sala, gimnas) references Sales(codi, codi_gimnas) on update cascade on delete cascade,
-      FOREIGN KEY (exercici) references Exercicis(codi) on update cascade on delete cascade,
-      FOREIGN KEY (gimnas) references Gimnasos(codi) on update cascade on delete cascade
+      FOREIGN KEY (exercici) references Exercicis(codi) on update cascade on delete cascade
   );""")
 
   realitza_exercicis_inserted = 0
@@ -865,6 +1352,7 @@ def create_realitza_exercicis(cur):
   for exercici in exercicis:
     nombre_quantitats = fake.random_int(min=sales_per_exercici/2, max=1.5*sales_per_exercici)
     for j in range(nombre_quantitats):
+
       print(realitza_exercicis_inserted+1, end = '\r')
 
       cur.execute("SELECT codi, codi_gimnas FROM Sales ORDER BY RANDOM() LIMIT 1")
@@ -874,11 +1362,10 @@ def create_realitza_exercicis(cur):
 
       try:
           cur.execute("INSERT INTO Realitza_Exercicis VALUES ('%s', '%s', '%s')" % (exercici[0], gimnas, sala))
+          realitza_exercicis_inserted += 1
       except psycopg2.IntegrityError as e:
           conn.rollback()
           #print("Error inserting (%s, %s, %s). Error information: %s" % (exercici[0], gimnas, sala, e))
-      
-      realitza_exercicis_inserted += 1
 
 
 def create_participacions(cur):
@@ -939,21 +1426,31 @@ def llista_laborables_periode(start_date, end_date):
 		start_date = first_working_day + relativedelta(months=1)
 	return dates_list
 
+def fill_entrenaments(cur):
+    cur.execute("SELECT codi FROM Entrenaments")
+    entrenaments = cur.fetchall()
+    for entrenament in entrenaments:
+        #print(entrenament[0])
+        fill_entrenament(cur, entrenament[0])
+        #conn.commit()
+        #print("hola papi")
+
 
 def fill_entrenament(cur, entrenament):
     nombre_rondes = fake.random_int(min=1, max=15)
 
     for ordre in range(1, nombre_rondes):
         codi = ''.join(fake.random_letters(length=4)) + str(fake.random_int(min=1000, max=9999))
-        cur.execute("SELECT nom FROM Exercicis ORDER BY RANDOM() LIMIT 1")
+        cur.execute("SELECT codi FROM Exercicis ORDER BY RANDOM() LIMIT 1")
+        
         exercici = cur.fetchone()[0]
         try: 
             cur.execute("INSERT INTO Rondes VALUES ('%s', '%s', '%s', '%s')" % (codi, ordre, entrenament, exercici))
+            #print("hola papi")
             nombre_series = fake.random_int(min=1, max=10)
-
+            conn.commit()
             for j in range(1, nombre_series):
-                cur.execute("SELECT nom FROM Aliments ORDER BY RANDOM() LIMIT 1")
-                aliment = cur.fetchone()[0]
+                conn.commit()
                 pes = fake.pyfloat(left_digits=3, right_digits=1, positive=True, min_value=0.1, max_value=200)
                 if pes < 0.5:
                     pes = 0.0
@@ -963,6 +1460,7 @@ def fill_entrenament(cur, entrenament):
                   duracio = timedelta(seconds=duracio_segons)
                   try: 
                     cur.execute("INSERT INTO Series VALUES ('%s', '%s', NULL, '%s', '%s')" % (j, pes, duracio, codi))
+                    conn.commit()
                   except psycopg2.IntegrityError as e:
                     conn.rollback()
                     #print("Error inserting ('%s', '%s', '%s', NULL, '%s'). Error information: %s" % (j, pes, num_repeticions, codi))
@@ -971,13 +1469,14 @@ def fill_entrenament(cur, entrenament):
                   num_repeticions =  fake.random_int(min=0, max=30)
                   try: 
                     cur.execute("INSERT INTO Series VALUES ('%s', '%s', '%s', NULL, '%s')" % (j, pes, num_repeticions, codi))
+                    conn.commit()
                   except psycopg2.IntegrityError as e:
                     conn.rollback()
                     #print("Error inserting ('%s', '%s', '%s', NULL, '%s'). Error information: %s" % (j, pes, num_repeticions, codi))
 
         except psycopg2.IntegrityError as e:
           conn.rollback()
-          #print("Error inserting ('%s', '%s', '%s' '%s'). Error information: %s" % (codi, ordre, entrenament, exercici, e))
+          print("Error inserting ('%s', '%s', '%s' '%s'). Error information: %s" % (codi, ordre, entrenament, exercici, e))
 
 
 
@@ -993,45 +1492,41 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
-#create_ciutats(cur)
+#create_ciutats(cur) DONE!!!!!!!!!!!!!
+#create_empleats(cur) DONE!!!!!!!!!!!!!
+#create_gimnasos(cur) DONE!!!!!!!!!!!!! 
+#create_sales(cur) DONE!!!!!!!!!!!!! 
+print("Creant rutina...")
+#create_apats(cur)
 #conn.commit()
-#create_empleats(cur)
+#create_pagaments(cur)
+fill_entrenaments(cur)
 #conn.commit()
-#create_gimnasos(cur)
+#create_entrenaments(cur)
+conn.commit()
+#create_dies(cur) DONE!!!!!!!!!!!!!
+#create_aliments(cur) DONE!!!!!!!!!!!!!
+#create_dietes(cur) DONE!!!!!!!!!!!!!
+#create_rutines(cur) DONE!!!!!!!!!!!!!
+#create_clients(cur) DONE!!!!!!!!!!!!!
+#create_exercicis(cur) DONE!!!!!!!!!!!!!
+#create_quantificador_dietes(cur) DONE!!!!!!!!!!!!!
+# create_quantificador_rutines(cur) DONE!!!!!!!!!!!!!
+
+#create_realitza_exercicis(cur)
 #conn.commit()
-#create_sales(cur)
+#create_classes(cur) 
+#conn.commit()
+#create_participacions(cur)
 #conn.commit()
 
-######################################3falta debugar #create_treballadors(cur)
-#conn.commit()
-#create_classes(cur)
-#conn.commit()
-#create_dies(cur)
-#conn.commit()
-#create_aliments(cur)
-#conn.commit()
-#create_dietes(cur)
-#conn.commit()
-#create_rutines(cur)
-#conn.commit()
-#create_clients(cur)
-#conn.commit()
-#create_quantificador_dietes(cur)
-#conn.commit()
-#create_quantificador_rutines(cur)
-#conn.commit()
-#################################################3esta mal#create_apats(cur)
-#conn.commit()
-#create_exercicis(cur)
-conn.commit()
-create_entrenaments(cur)
-conn.commit()
-#############Se corta en algun punto k no deberia #create_realitza_exercicis(cur)
-conn.commit()
-##Hace algunas de mas create_participacions(cur)
-conn.commit()
-#create_pagaments(cur)
-#conn.commit()
+
+
+
+
 
 cur.close()
 conn.close()
+
+
+
