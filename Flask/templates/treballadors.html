@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Treballadors</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f6f2;
+            margin: 0;
+            padding: 0;
+        }
+        
+        h1 {
+            color: #4d4d4d;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 32px;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #fcdab7;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        
+        .card {
+            width: 30%;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .card-link {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .card-link a {
+            color: #4d4d4d;
+            text-decoration: none;
+        }
+        
+        .card-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .back-link a {
+            color: #4d4d4d;
+            text-decoration: none;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Treballadors</h1>
+        
+        <div class="row">
+            {% for empleat in data %}
+            <div class="card">
+                <div class="card-title">{{ empleat[3] }} {{ empleat[4] }}</div>
+                <div class="card-link">
+                    <a href="{{ url_for('show_empleat_details', empleat_id=empleat[0]) }}">View Details</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="back-link">
+            <a href="index.html">Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>

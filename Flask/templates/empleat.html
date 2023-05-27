@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Empleat Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f6f2;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .profile-card {
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .profile-image {
+            display: block;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin: 0 auto;
+            margin-bottom: 20px;
+        }
+        
+        .profile-details {
+            text-align: center;
+        }
+        
+        .profile-details h2 {
+            color: #4d4d4d;
+            margin-bottom: 10px;
+        }
+        
+        .profile-details p {
+            color: #808080;
+            margin-bottom: 5px;
+        }
+        
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .back-link a {
+            color: #4d4d4d;
+            text-decoration: none;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="profile-card">
+            <img src="https://randomuser.me/api/portraits/men/{{ data[12] }}.jpg" class="profile-image" alt="Profile Image">
+            <div class="profile-details">
+                <h2>{{ data[3] }}</h2>
+                <p><strong>DNI:</strong> {{ data[0] }}</p>
+                <p><strong>TIPUS:</strong> {{ data[1] }}</p>
+                <p><strong>SOU:</strong> {{ data[2] }}</p>
+                <p><strong>NOM:</strong> {{ data[3] }}</p>
+                <p><strong>COGNOMS:</strong> {{ data[4] }}</p>
+                <p><strong>COMPTE BANCARI:</strong> {{ data[5] }}</p>
+                <p><strong>TELEFON:</strong> {{ data[6] }}</p>
+                <p><strong>NAIXEMENT:</strong> {{ data[7] }}</p>
+                <p><strong>SEXE:</strong> {{ data[8] }}</p>
+                <p><strong>HORARIS:</strong> {{ data[9] }}</p>
+                <p><strong>NOM CIUTAT:</strong> {{ data[10] }}</p>
+                <p><strong>CODI POSTAL:</strong> {{ data[11] }}</p>
+            </div>
+        </div>
+        <div class="back-link">
+            <a href="treballadors">Back to Workers</a>
+        </div>
+    </div>
+</body>
+</html>

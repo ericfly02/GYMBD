@@ -22,11 +22,11 @@ num_aliments = 100000
 num_dietes = 90000
 num_rutines = 2000
 num_clients = 40000
-num_quantificador_dietes = 10000
-num_quantificador_rutines = 10000
+num_quantificador_dietes = 100000
+num_quantificador_rutines = 100000
 num_entrenaments = 200000
-num_apats = 200000
-num_participacions = 10000
+num_apats = 80000
+num_participacions = 1000000
 sales_per_exercici = 1000
 num_exercicis = 300
 
@@ -134,11 +134,14 @@ def create_empleats(cur):
 
       nom_ciutat   = result[0]
       codi_postal = result[1]
-    cur.execute("SELECT codi FROM Gimnasos WHERE codi_postal = '%s' ORDER BY RANDOM() LIMIT 1"% str(codi_postal),)
-    gimnas = cur.fetchone()[0]
+    
+    cur.execute("SELECT codi FROM Gimnasos WHERE codi_postal='%d' ORDER BY RANDOM() LIMIT 1"% int(codi_postal),)
+    result = cur.fetchone()
+
+    gimnas = result[0]
       #empleats_inserted += 1
     try:
-        cur.execute("INSERT INTO Empleats VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (dni, tipus, sou, nom, cognoms, compte_bancari, telefon, naixement, sexe, horaris, nom_ciutat, codi_postal))
+        #cur.execute("INSERT INTO Empleats VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (dni, tipus, sou, nom, cognoms, compte_bancari, telefon, naixement, sexe, horaris, nom_ciutat, codi_postal))
         empleats_inserted += 1
         cur.execute("INSERT INTO Treballadors VALUES ('%s', '%s')" % (gimnas, dni))
 
@@ -241,7 +244,7 @@ def create_sales(cur):
         codi_gimnas varchar(8) NOT NULL,
         aforament_maxim numeric(3,0),
         PRIMARY KEY (codi, codi_gimnas),
-        FOREIGN KEY (codi_gimnas) references Gimnasos(codi) on update cascade on delete cascade
+        FOREIGN KEY (codi_gimnas) references gimnasos(codi) on update cascade on delete cascade
     );""")
 
   sales_inserted = 0
@@ -280,7 +283,6 @@ def create_classes(cur):
         PRIMARY KEY (codi),
         -- No es pot donar el cas que hi hagin dos classes el mateix dia, a la mateixa hora, al mateix gimnas i a la mateixa sala
         UNIQUE(codi_gimnas, hora, codi_sala, data),
-        FOREIGN KEY (codi_gimnas) references Gimnasos(codi) on update cascade on delete restrict,
         FOREIGN KEY (codi_sala, codi_gimnas) references Sales(codi, codi_gimnas) on update cascade on delete restrict,
         FOREIGN KEY (tutor) references Empleats(dni) on update cascade on delete restrict
 );""")
@@ -323,7 +325,7 @@ def create_classes(cur):
             cur.execute("INSERT INTO Classes VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s')" % (codi, tipus, data, duracio, hora, codi_sala, codi_gimnas, tutor))
         except psycopg2.IntegrityError as e:
             conn.rollback()
-            #print("Error inserting (%s, %s, %s, %s, %s, %s, %s, %s). Error information: %s" % (codi, tipus, data, duracio, hora, codi_sala, codi_gimnas, tutor, e))
+            print("Error inserting (%s, %s, %s, %s, %s, %s, %s, %s). Error information: %s" % (codi, tipus, data, duracio, hora, codi_sala, codi_gimnas, tutor, e))
 
 
             
@@ -1115,7 +1117,10 @@ def create_apats(cur):
   cur.execute("""CREATE TABLE Apats(
       dieta varchar(8) NOT NULL,
       dia varchar(9) NOT NULL,
-      PRIMARY KEY (dieta,dia)
+      PRIMARY KEY (dieta,dia),
+      FOREIGN KEY (dieta) references Dietes(codi) on update cascade on delete cascade,
+      FOREIGN KEY (dia) references Dies(dia) on update cascade on delete cascade
+
     ); """)
 
   cur.execute("""CREATE TABLE Franges_Horaries(
@@ -1134,7 +1139,8 @@ def create_apats(cur):
       dia varchar(9) NOT NULL,
       aliment varchar(50) NOT NULL,
       PRIMARY KEY (hora, dieta, dia, aliment),
-      FOREIGN KEY (aliment) references Aliments(nom) on update cascade on delete cascade
+      FOREIGN KEY (aliment) references Aliments(nom) on update cascade on delete cascade,
+      FOREIGN KEY (hora, dieta, dia) references Franges_Horaries(hora, dieta, dia) on update cascade on delete cascade
     );""")
 
   apats_inserted = 0
@@ -1287,7 +1293,7 @@ def create_entrenaments(cur):
     try:
       cur.execute("INSERT INTO Entrenaments VALUES ('%s')" % (codi,))
       conn.commit()
-      fill_entrenament(cur, codi)
+      fill_entrenaments(cur)
       if entrenaments_inserted > num_entrenaments*0.1:
             cur.execute("SELECT dni, inici FROM Clients ORDER BY RANDOM() LIMIT 1")
             result = cur.fetchone()
@@ -1366,6 +1372,7 @@ def create_realitza_exercicis(cur):
       except psycopg2.IntegrityError as e:
           conn.rollback()
           #print("Error inserting (%s, %s, %s). Error information: %s" % (exercici[0], gimnas, sala, e))
+  
 
 
 def create_participacions(cur):
@@ -1401,10 +1408,34 @@ def create_participacions(cur):
           cur.execute("INSERT INTO Participacions VALUES ('%s', '%s')" % (classe, client))
       except psycopg2.IntegrityError as e:
           conn.rollback()
-          #print("Error inserting (%s, %s). Error information: %s" % (client, classe, e))
+          print("Error inserting (%s, %s). Error information: %s" % (client, classe, e))
       participacions_inserted += 1
 
 
+def create_empleados(cur):
+  print("%d empleats will be inserted." % num_empleats)
+  empleats_inserted = 0
+  while empleats_inserted < num_empleats:
+    print(empleats_inserted+1, end = '\r')
+  
+    cur.execute("SELECT dni, codi_postal FROM Empleats")
+    empleats_dni = cur.fetchall()
+
+    for empleat in empleats_dni:
+        random = randint(0, 5)
+        cur.execute("SELECT codi FROM Gimnasos where codi_postal = %d ORDER BY RANDOM() LIMIT %d" % (empleat[1], random))
+        gimnasos = cur.fetchall()
+
+        for gimnas in gimnasos:
+            try:
+                cur.execute("INSERT INTO Treballadors VALUES ('%s', '%s')" % (gimnas[0], empleat[0]))
+                conn.commit()
+            except psycopg2.IntegrityError as e:
+                conn.rollback()
+                #print("Error inserting ('%s', '%s'). Error information: %s" % (empleat[0], gimnas[0], e))
+            empleats_inserted += 1
+            
+    
 ##########################################################Funcions auxiliars a les de crear#######################################################
 
 def primer_laborable(year, month):
@@ -1425,6 +1456,7 @@ def llista_laborables_periode(start_date, end_date):
 		dates_list.append(first_working_day.strftime('%d/%m/%Y'))
 		start_date = first_working_day + relativedelta(months=1)
 	return dates_list
+
 
 def fill_entrenaments(cur):
     cur.execute("SELECT codi FROM Entrenaments")
@@ -1479,7 +1511,6 @@ def fill_entrenament(cur, entrenament):
           print("Error inserting ('%s', '%s', '%s' '%s'). Error information: %s" % (codi, ordre, entrenament, exercici, e))
 
 
-
 ##################################################################Programa principal###########################################################
 
 conn = psycopg2.connect(
@@ -1492,36 +1523,67 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
-#create_ciutats(cur) DONE!!!!!!!!!!!!!
-#create_empleats(cur) DONE!!!!!!!!!!!!!
-#create_gimnasos(cur) DONE!!!!!!!!!!!!! 
-#create_sales(cur) DONE!!!!!!!!!!!!! 
-print("Creant rutina...")
-#create_apats(cur)
-#conn.commit()
-#create_pagaments(cur)
-fill_entrenaments(cur)
-#conn.commit()
-#create_entrenaments(cur)
+"""
+create_ciutats(cur) 
 conn.commit()
-#create_dies(cur) DONE!!!!!!!!!!!!!
-#create_aliments(cur) DONE!!!!!!!!!!!!!
-#create_dietes(cur) DONE!!!!!!!!!!!!!
-#create_rutines(cur) DONE!!!!!!!!!!!!!
-#create_clients(cur) DONE!!!!!!!!!!!!!
-#create_exercicis(cur) DONE!!!!!!!!!!!!!
-#create_quantificador_dietes(cur) DONE!!!!!!!!!!!!!
-# create_quantificador_rutines(cur) DONE!!!!!!!!!!!!!
-
-#create_realitza_exercicis(cur)
+create_gimnasos(cur)  
+conn.commit()
+create_empleats(cur)
+conn.commit()
+create_sales(cur)  
+conn.commit()
+create_apats(cur)
+conn.commit()
+create_pagaments(cur)
+conn.commit()
+#fill_entrenaments(cur)
 #conn.commit()
-#create_classes(cur) 
+create_entrenaments(cur)
+conn.commit()
+create_dies(cur)
+conn.commit()
+create_aliments(cur) 
+conn.commit()
+create_dietes(cur)
+conn.commit()
+create_rutines(cur) 
+conn.commit()
+create_clients(cur) 
+conn.commit()
+create_exercicis(cur) 
+conn.commit()
+create_quantificador_dietes(cur) 
+conn.commit()
+create_quantificador_rutines(cur) 
+conn.commit()
+create_realitza_exercicis(cur)
+conn.commit()
+create_classes(cur) 
+conn.commit()
+create_participacions(cur)
+conn.commit()
+"""
+
+#create_gimnasos(cur)  
 #conn.commit()
-#create_participacions(cur)
+
+#create_empleados(cur)
 #conn.commit()
 
+#create_sales(cur)  
+#conn.commit()
 
+create_realitza_exercicis(cur)
+conn.commit()
 
+create_apats(cur)
+conn.commit()
+
+create_classes(cur) 
+conn.commit()
+
+create_participacions(cur)
+conn.commit()
 
 
 
