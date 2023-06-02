@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GYMBD</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffd5c2;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 70vh;
+        }
+        
+        h1 {
+            color: #4d4d4d;
+            text-align: center;
+            font-size: 100px;
+            margin-bottom: 30px;
+            animation: fadeIn 1s ease-in-out;
+            font-family: 'Pacifico', cursive;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            animation: slideInUp 1s ease-in-out;
+        }
+        
+        .button {
+            padding: 20px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            margin: 0 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out;
+        }
+        
+        .button.clients {
+            background-color: #a4e790;
+            color: #ffffff;
+        }
+        
+        .button.treballadors {
+            background-color: #a4e790;
+            color: #ffffff;
+        }
+        
+        .button:hover {
+            background-color: #ff9e4a;
+        }
+        
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideInUp {
+            0% {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .footer {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #4d4d4d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GYMBD</h1>
+        <div class="button-container">
+            <a href="clients" class="button clients">CLIENTS</a>
+            <a href="treballadors" class="button treballadors">TREBALLADORS</a>
+        </div>
+    </div>
+    <div class="footer">Projecte DABD 2023 - Roberto Lupu i Eric Gonzalez</div>
+</body>
+</html>

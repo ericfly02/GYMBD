@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f6f2;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        .login-box {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 400px;
+        }
+        
+        .login-box h1 {
+            text-align: center;
+            color: #4d4d4d;
+        }
+        
+        .login-form {
+            margin-top: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #4d4d4d;
+            font-weight: bold;
+        }
+        
+        .form-group input[type="text"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #dddddd;
+        }
+        
+        .form-group button {
+            width: 100%;
+            padding: 10px;
+            background-color: #aad8d3;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .form-group button:hover {
+            background-color: #7db3ae;
+        }
+        
+        .form-group .register-link {
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .form-group .register-link a {
+            color: #4d4d4d;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .form-group .register-link a:hover {
+            color: #7db3ae;
+        }
+
+        /* Animations */
+        @keyframes slideInFromLeft {
+            0% {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .animated {
+            animation-duration: 1s;
+            animation-fill-mode: both;
+        }
+
+        .slide-in {
+            animation-name: slideInFromLeft;
+        }
+
+        .fade-in {
+            animation-name: fadeIn;
+        }
+        
+        .footer {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #4d4d4d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-box animated slide-in">
+            <h1 class="animated fade-in">GYMBD</h1>
+            <form class="login-form" method="POST" action="/login">
+                <div class="form-group animated fade-in">
+                    <label for="email">Correu</label>
+                    <input type="text" id="email" name="email" placeholder="Insereix el correu">
+                </div>
+                <div class="form-group animated fade-in">
+                    <label for="password">Contrassenya</label>
+                    <input type="password" id="password" name="password" placeholder="Insereix la contrassenya">
+                </div>
+                <div class="form-group animated fade-in">
+                    <button type="submit">Login</button>
+                </div>
+            </form>
+        </div>
+        <div class="footer">Projecte DABD 2023 - Roberto Lupu i Eric Gonzalez</div>
+    </div>
+</body>
+</html>

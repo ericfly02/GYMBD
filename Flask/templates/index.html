@@ -1,66 +1,88 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GYMBD</title>
+    <title>GYMBD - Carregant</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #ffd5c2;
+            background-color: #f9f6f2;
             margin: 0;
             padding: 0;
-            overflow: hidden;
-        }
-        
-        .container {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 70vh;
+            height: 100vh;
         }
-        
-        h1 {
-            color: #4d4d4d;
-            text-align: center;
-            font-size: 100px;
-            margin-bottom: 30px;
-            animation: fadeIn 1s ease-in-out;
-            font-family: 'Pacifico', cursive;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        
-        .button-container {
+
+        .pinwheel {
+            --uib-size: 100px;
+            --uib-speed: 1s;
+            --uib-color: black;
+            --uib-line-weight: 3.5px;
+
+            position: relative;
             display: flex;
+            align-items: center;
             justify-content: center;
+            height: var(--uib-size);
+            width: var(--uib-size);
+        }
+
+        .pinwheel__line {
+            position: absolute;
+            top: calc(50% - var(--uib-line-weight) / 2);
+            left: 0;
+            height: var(--uib-line-weight);
+            width: 100%;
+            border-radius: calc(var(--uib-line-weight) / 2);
+            background-color: var(--uib-color);
+            animation: rotate var(--uib-speed) ease-in-out infinite;
+        }
+
+        .pinwheel__line:nth-child(2) {
+            animation-delay: calc(var(--uib-speed) * 0.075);
+            opacity: 0.8;
+        }
+
+        .pinwheel__line:nth-child(3) {
+            animation-delay: calc(var(--uib-speed) * 0.15);
+            opacity: 0.6;
+        }
+
+        .pinwheel__line:nth-child(4) {
+            animation-delay: calc(var(--uib-speed) * 0.225);
+            opacity: 0.4;
+        }
+
+        .pinwheel__line:nth-child(5) {
+            animation-delay: calc(var(--uib-speed) * 0.3);
+            opacity: 0.2;
+        }
+
+        .pinwheel__line:nth-child(6) {
+            animation-delay: calc(var(--uib-speed) * 0.375);
+            opacity: 0.1;
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(180deg);
+            }
+        }
+
+        .text {
             margin-top: 20px;
-            animation: slideInUp 1s ease-in-out;
+            color: #4d4d4d;
+            font-size: 24px;
+            text-align: center;
+            animation: fadeIn 4s ease-in-out;
         }
-        
-        .button {
-            padding: 20px 40px;
-            font-size: 20px;
-            font-weight: bold;
-            border: none;
-            border-radius: 5px;
-            margin: 0 10px;
-            cursor: pointer;
-            transition: background-color 0.3s ease-in-out;
-        }
-        
-        .button.clients {
-            background-color: #a4e790;
-            color: #ffffff;
-        }
-        
-        .button.treballadors {
-            background-color: #a4e790;
-            color: #ffffff;
-        }
-        
-        .button:hover {
-            background-color: #ff9e4a;
-        }
-        
+
         @keyframes fadeIn {
             0% {
                 opacity: 0;
@@ -69,36 +91,53 @@
                 opacity: 1;
             }
         }
-        
-        @keyframes slideInUp {
+
+        .ellipsis {
+            display: inline-block;
+            overflow: hidden;
+            white-space: nowrap;
+            animation: ellipsis 2s infinite;
+        }
+
+        @keyframes ellipsis {
             0% {
-                transform: translateY(100px);
-                opacity: 0;
+                width: 0;
+            }
+            25% {
+                width: 0;
+            }
+            50% {
+                width: 10px;
+            }
+            75% {
+                width: 0;
             }
             100% {
-                transform: translateY(0);
-                opacity: 1;
+                width: 0;
             }
         }
-        
+
         .footer {
-            position: fixed;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
+            margin-top: 40px;
             color: #4d4d4d;
             font-size: 14px;
+            text-align: center;
         }
     </style>
+    <meta http-equiv="refresh" content="5; URL=/login">
 </head>
 <body>
-    <div class="container">
-        <h1>GYMBD</h1>
-        <div class="button-container">
-            <a href="clients" class="button clients">CLIENTS</a>
-            <a href="treballadors" class="button treballadors">TREBALLADORS</a>
-        </div>
+    <div class="pinwheel">
+        <div class="pinwheel__line"></div>
+        <div class="pinwheel__line"></div>
+        <div class="pinwheel__line"></div>
+        <div class="pinwheel__line"></div>
+        <div class="pinwheel__line"></div>
+        <div class="pinwheel__line"></div>
     </div>
+
+    <div class="text">Carregant GYMBD<span class="ellipsis">...</span></div>
+
     <div class="footer">Projecte DABD 2023 - Roberto Lupu i Eric Gonzalez</div>
 </body>
 </html>
