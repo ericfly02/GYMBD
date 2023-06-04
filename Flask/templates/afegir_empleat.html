@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Afegir Treballador</title>
+    <style>
+        /* Your existing CSS styles */
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f6f2;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #4d4d4d;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 32px;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #fcdab7;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form {
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .form label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .form input[type="text"],
+        .form select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        
+        .form button {
+            border: none;
+            background-color: #4d4d4d;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        
+        .form button:hover {
+            background-color: #fbc79e;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .back-link a {
+            color: #4d4d4d;
+            text-decoration: none;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Afegir Treballador</h1>
+        
+        <form class="form" method="POST" action="/afegir_empleat">
+            <label for="dni">DNI</label>
+            <input type="text" id="dni" name="dni" placeholder="DNI" required>
+            
+            <label for="tipus">Tipus</label>
+            <select id="tipus" name="tipus" required>
+                <option value="">Selecciona un tipus</option>
+                <option value="senyor/a_neteja">Senyor/a Neteja</option>
+                <option value="dietista">Dietista</option>
+                <option value="entrenador/a">Entrenador/a</option>
+                <option value="manteniment">Manteniment</option>
+                <option value="recepcionista">Recepcionista</option>
+                <option value="encarregat">Encarregat</option>
+            </select>
+            
+            <label for="sou">Sou</label>
+            <input type="text" id="sou" name="sou" placeholder="Sou" required>
+            
+            <label for="nom">Nom</label>
+            <input type="text" id="nom" name="nom" placeholder="Nom" required>
+            
+            <label for="cognoms">Cognoms</label>
+            <input type="text" id="cognoms" name="cognoms" placeholder="Cognoms" required>
+            
+            <label for="compte_bancari">Compte Bancari</label>
+            <input type="text" id="compte_bancari" name="compte_bancari" placeholder="Compte Bancari" required>
+            
+            <label for="telefon">Telèfon</label>
+            <input type="text" id="telefon" name="telefon" placeholder="Telèfon" required>
+            
+            <label for="data_naixement">Data de Naixement</label>
+            <input type="text" id="data_naixement" name="data_naixement" placeholder="Data de Naixement" required>
+            
+            <label for="sexe">Sexe</label>
+            <select id="sexe" name="sexe" required>
+                <option value="">Selecciona el sexe</option>
+                <option value="home">H</option>
+                <option value="dona">D</option>
+            </select>
+            
+            <label for="horaris">Horaris</label>
+            <input type="text" id="horaris" name="horaris" placeholder="Horaris" required>
+            
+            <label for="nom_ciutat">Nom de la Ciutat</label>
+            <input type="text" id="nom_ciutat" name="nom_ciutat" placeholder="Nom de la Ciutat" required>
+            
+            <label for="codi_postal">Codi Postal</label>
+            <input type="text" id="codi_postal" name="codi_postal" placeholder="Codi Postal" required>
+            
+            <button type="submit">Guardar</button>
+        </form>
+        
+        <div class="back-link">
+            <a href="/treballadors">Torna a la llista de Treballadors</a>
+        </div>
+    </div>
+</body>
+</html>

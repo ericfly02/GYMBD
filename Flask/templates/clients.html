@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clients</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f6f2;
+            margin: 0;
+            padding: 0;
+        }
+        
+        h1 {
+            color: #4d4d4d;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 32px;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #fcdab7;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        
+        .card {
+            width: 30%;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .card:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .card-link {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .card-link a {
+            color: #4d4d4d;
+            text-decoration: none;
+        }
+        
+        .card-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .back-link {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .back-link button {
+            border: none;
+            background-color: #4d4d4d;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        
+        .back-link button:hover {
+            background-color: #fbc79e;
+        }
+        
+        .back-link a {
+            color: #4d4d4d;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .pagination {
+            overflow-x: auto;
+            white-space: nowrap;
+            margin-top: 20px;
+        }
+        
+        .pagination-button {
+            border: none;
+            background-color: #fcdab7;
+            color: #4d4d4d;
+            padding: 8px 12px;
+            margin: 0 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        
+        .pagination-button:hover {
+            background-color: #fbc79e;
+        }
+        
+        .pagination-button.active {
+            background-color: #fbc79e;
+        }
+
+        .search-box {
+            position: fixed;
+            bottom: 270px;
+            right: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        
+        .search-input {
+            border: 1px solid #ccc;
+            padding: 12px;
+            border-radius: 5px 0 0 5px;
+            font-size: 20px;
+            width: 200px;
+        }
+
+        
+        .search-button {
+            border: none;
+            background-color: #4d4d4d;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        
+        .search-button:hover {
+            background-color: #fbc79e;
+        }
+        
+        .add-button {
+            margin-top: 70px;
+            font-size: 30px;
+            margin-right: 63px;
+
+        }
+        
+        .delete-button {
+            background-color: #f44336;
+            margin-top: 70px;
+            margin-right: 43px;
+            font-size: 30px;
+            
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Clients</h1>
+        
+        <div class="row">
+            {% for client in clients %}
+            <div class="card">
+                <div class="card-title">{{ client[4] }} {{ client[5] }}</div>
+                <div class="card-link">
+                    <a href="{{ url_for('show_client_details', client_id=client[0]) }}">Mostrar Detalls</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="pagination">
+            {% for page in range(1, total_pages + 1) %}
+                {% if page == current_page %}
+                    <button class="pagination-button active">{{ page }}</button>
+                {% else %}
+                    <a href="{{ url_for('clients', page=page) }}">
+                        <button class="pagination-button">{{ page }}</button>
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+        
+        <div class="back-link">
+            <a href="admin_dashboard">
+                <button>Torna al Dashboard</button>
+            </a>
+        </div>
+        
+        <div class="search-box">
+            <form method="POST" action="/clients">
+                <input type="text" id="nom" name="nom" class="search-input" placeholder="Cerca clients...">
+                <button type="submit" class="search-button">Cerca</button>
+            </form>
+            <a href="afegir_client">
+                <button class="search-button add-button">Afegir</button>
+            </a>
+            <a href="esborrar_client">
+                <button class="search-button delete-button">Esborrar</button>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

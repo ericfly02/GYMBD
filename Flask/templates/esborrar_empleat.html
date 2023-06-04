@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Esborra Empleat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f6f2;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #4d4d4d;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 32px;
+            font-weight: bold;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            font-size: 20px;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        
+        .submit-button {
+            border: none;
+            background-color: #4d4d4d;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        
+        .submit-button:hover {
+            background-color: #fbc79e;
+        }
+        .back-link {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .back-link a {
+            color: #4d4d4d;
+            text-decoration: none;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Esborra Empleat</h1>
+        
+        <form method="POST" action="/esborrar_empleat">
+            <div class="form-group">
+                <label for="nom">DNI de l'empleat:</label>
+                <input type="text" id="dni" name="dni" placeholder="Introdueix el DNI de l'empleat" required>
+            </div>
+            <button type="submit" class="submit-button">Esborra Empleat</button>
+            <a href="/treballadors">Torna a la llista de Treballadors</a>
+        </form>
+    </div>
+</body>
+</html>
