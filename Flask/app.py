@@ -1,6 +1,8 @@
 from flask import Flask, render_template, jsonify, redirect, url_for, request
 import psycopg2
 import random
+from urllib.parse import urlencode
+
 
 app = Flask(__name__)
 # Configure PostgreSQL connection parameters
@@ -30,14 +32,19 @@ def login():
         data = cursor.fetchall()
         cursor.close()
 
+        
+
         if email == 'admin' and password == 'admin':
             return redirect('/admin_dashboard')
-        elif data:
-            # Redirect to a success page or dashboard
-            return redirect('/client_dashboard', data=data)
+        elif len(data) > 0:
+            query_params = urlencode({'data': data[0]})  # Encode data as query parameter
+            return redirect(f'/client_dashboard?{query_params}')
 
     return render_template('login.html')
 
+#######################################################################
+#                           ADMIN DASHBOARD                           #
+#######################################################################
 # Admin Dashboard Page
 @app.route('/admin_dashboard')
 def admin_dashboard():
@@ -244,9 +251,45 @@ def show_client():
     # Get the worker details from the URL parameter
     client_details = request.args.getlist('client_details')
     random_number = request.args.getlist('random_number')
+    print(random_number)
 
     # Render the empleat.html template with the worker's details
-    return render_template('clients_info.html', data=client_details, random_number = random_number)
+    return render_template('clients_info.html', data=client_details, random_number=random_number)
+
+
+#######################################################################
+#                           CLIENT DASHBOARD                           #
+#######################################################################
+
+# Admin Dashboard Page
+@app.route('/client_dashboard')
+def client_dashboard():
+    dades = []
+    data = request.args.getlist('data')
+    data = (data[0][1:-1]).split(',')
+
+    dni = data[0][1:].strip("'")
+    nom = data[6][1:].strip("'")
+
+    dades.append(nom)
+    dades.append(dni)
+
+    classes_realitzades = []
+
+    # Fetch data from the database
+    cursor = conn.cursor()
+    cursor.execute("select classe from participacions where client = %s", (dni,))
+    classes = cursor.fetchall()
+    for classe in classes:
+        cursor.execute("select tipus from classes where codi = %s", (classe[0],))
+        nom_classe = cursor.fetchall()
+        classes_realitzades.append(nom_classe[0][0])
+
+    
+    cursor.close()
+
+    print(dades)
+    return render_template('client_dashboard.html', dades=dades, classes_realitzades=classes_realitzades, dni=dni)
 
 
 if __name__ == '__main__':
