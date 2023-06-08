@@ -3,6 +3,8 @@
 <head>
     <title>Dashboard Administrador</title>
     <style>
+        /* Styles for the dashboard */
+
         body {
             font-family: Arial, sans-serif;
             background-color: #f9f6f2;
@@ -52,7 +54,7 @@
         }
 
         @keyframes fadeInUp {
-            0% {
+             0% {
                 opacity: 0;
                 transform: translateY(20px);
             }
@@ -73,6 +75,28 @@
                 transform: scale(1);
             }
         }
+
+        /* Styles for the logout button */
+
+        .logout-button {
+            margin-top: 40px;
+        }
+
+        .logout-button a {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #aad8d3;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 20px;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .logout-button a:hover {
+            background-color: #4d4d4d;
+        }
     </style>
 </head>
 <body>
@@ -81,6 +105,9 @@
         <div class="button-container">
             <a href="/clients" class="button">Clients</a>
             <a href="/treballadors" class="button">Treballadors</a>
+        </div>
+        <div class="logout-button">
+            <a href="/login">Logout</a>
         </div>
     </div>
 </body>

@@ -45,35 +45,37 @@ def login():
 #######################################################################
 #                           ADMIN DASHBOARD                           #
 #######################################################################
-# Admin Dashboard Page
+
 @app.route('/admin_dashboard')
 def admin_dashboard():
     return render_template('admin_dashboard.html')
-
-# Define route and view for the gimnasos page
-@app.route('/gimnasos')
-def gimnasos():
-    # Fetch data from the database
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM gimnasos")
-    data = cursor.fetchall()
-    cursor.close()
-
-    # Render the template with the fetched data
-    return render_template('gimnasos.html', data=data)
 
 @app.route('/treballadors', methods=['GET', 'POST'])
 def treballadors():
 
     if request.method == 'POST':
         if 'nom' in request.form:
-            nom = request.form['nom']
-            # Recuperar dades de la base de dades
+            dades = request.form['nom'].split(' ')
+            nom = dades[0]
+            print(dades)
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM empleats where nom = %s", (nom,))
+
+            if len(dades) == 1:
+                cursor.execute("SELECT * FROM empleats where nom = %s", (nom,))
+
+            if len(dades) == 2:
+                cognoms = dades[1] + ' '
+                cursor.execute("SELECT * FROM empleats where nom = %s and cognoms = %s", (nom, cognoms))
+            
+            if len(dades) == 3:
+                cognoms = dades[1] + ' ' + dades[2]
+                cursor.execute("SELECT * FROM empleats where nom = %s and cognoms = %s", (nom, cognoms))
+            
+            else:       
+                cursor.execute("SELECT * FROM empleats LIMIT 1000")
+            
             all_empleats = cursor.fetchall()
             cursor.close()
-
             # Render the template with the fetched data, current page, and total pages
             return render_template('treballadors.html', empleats=all_empleats, current_page=1, total_pages=1)
 
@@ -83,7 +85,7 @@ def treballadors():
 
     # Recuperar dades de la base de dades
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM empleats")
+    cursor.execute("SELECT * FROM empleats LIMIT 1000")
     all_empleats = cursor.fetchall()
     cursor.close()
 
@@ -118,9 +120,11 @@ def afegir_empleat():
         nom_ciutat = request.form.get('nom_ciutat')
         codi_postal = request.form.get('codi_postal')
 
+        print(dni, tipus, sou, nom, cognoms, compte_bancari, telefon, data_naixement, sexe, horaris, nom_ciutat, codi_postal)
+
         cursor = conn.cursor()
         try:
-            cursor.execute("INSERT INTO empleats VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (dni, tipus, sou, nom, cognoms, compte_bancari, telefon, data_naixement, sexe, horaris, nom_ciutat, codi_postal))
+            cursor.execute("INSERT INTO Empleats VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (dni, tipus, sou, nom, cognoms, compte_bancari, telefon, data_naixement, sexe, horaris, nom_ciutat, codi_postal))
             conn.commit()
         except psycopg2.IntegrityError as e:
             print(e)
@@ -173,7 +177,6 @@ def show_empleat_details(empleat_id):
     # Render the empleat.html template with the worker's details
     return redirect(url_for('show_empleat', worker_details=worker_details))
 
-
 @app.route('/empleat')
 def show_empleat():
     # Get the worker details from the URL parameter
@@ -182,16 +185,30 @@ def show_empleat():
     # Render the empleat.html template with the worker's details
     return render_template('empleat.html', data=worker_details)
 
-
 @app.route('/clients', methods=['GET', 'POST'])
 def clients():
 
     if request.method == 'POST':
         if 'nom' in request.form:
-            nom = request.form['nom']
-            # Recuperar dades de la base de dades
+            dades = request.form['nom'].split(' ')
+            nom = dades[0]
+            print(dades)
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM clients where nom = %s", (nom,))
+
+            if len(dades) == 1:
+                cursor.execute("SELECT * FROM clients where nom = %s", (nom,))
+
+            if len(dades) == 2:
+                cognoms = dades[1] + ' '
+                cursor.execute("SELECT * FROM clients where nom = %s and cognoms = %s", (nom, cognoms))
+            
+            if len(dades) == 3:
+                cognoms = dades[1] + ' ' + dades[2]
+                cursor.execute("SELECT * FROM clients where nom = %s and cognoms = %s", (nom, cognoms))
+            
+            else:       
+                cursor.execute("SELECT * FROM clients LIMIT 1000")
+
             all_clients = cursor.fetchall()
             cursor.close()
 
@@ -204,7 +221,7 @@ def clients():
 
     # Recuperar dades de la base de dades
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM clients")
+    cursor.execute("SELECT * FROM clients LIMIT 1000")
     all_clients = cursor.fetchall()
     cursor.close()
 
@@ -256,6 +273,66 @@ def show_client():
     # Render the empleat.html template with the worker's details
     return render_template('clients_info.html', data=client_details, random_number=random_number)
 
+@app.route('/afegir_client', methods=['GET', 'POST'])
+def afegir_client():
+
+    if request.method == 'POST':
+        dni = request.form.get('dni')
+        inici = request.form.get('inici')
+        adreca = request.form.get('adreca')
+        correu = request.form.get('correu')
+        nom = request.form.get('nom')
+        cognoms = request.form.get('cognoms')
+        compte_bancari = request.form.get('compte_bancari')
+        telefon = request.form.get('telefon')
+        data_naixement = request.form.get('data_naixement')
+        sexe = request.form.get('sexe')
+        pes = request.form.get('pes')
+        alcada = request.form.get('alcada')
+        greix = request.form.get('greix')
+        massa_ossia = request.form.get('massa_ossia')
+        massa_muscular = request.form.get('massa_muscular')
+        estat = request.form.get('estat')
+        nom_ciutat = request.form.get('nom_ciutat')
+        codi_postal = request.form.get('codi_postal')
+        password = request.form.get('password')
+
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("INSERT INTO Clients VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (dni, inici, adreca, correu, nom, cognoms, compte_bancari, telefon, data_naixement, sexe, pes, alcada, greix, massa_ossia, massa_muscular, estat, nom_ciutat, codi_postal, password))
+            conn.commit()
+        except psycopg2.IntegrityError as e:
+            print(e)
+            conn.rollback()
+        cursor.close()
+
+    # Render the template with the fetched data, current page, and total pages
+    return render_template('afegir_client.html')
+
+@app.route('/esborrar_client', methods=['GET', 'POST'])
+def esborrar_client():
+    if request.method == 'POST':
+        # Retrieve form data
+        dni = request.form.get('dni')
+       
+        # Perform deletion query using the provided name
+        cursor = conn.cursor()
+
+        try:
+            # Primer borrem a la taula pagaments ja que hi ha una FK de la taula clients a la taula pagaments i no es pot borrar un client si te pagaments
+            cursor.execute("DELETE FROM pagaments WHERE client = %s", (dni,))
+            cursor.execute("DELETE FROM clients WHERE dni = %s", (dni,))
+            conn.commit()
+            
+        except psycopg2.IntegrityError as e:
+            print(e)
+            conn.rollback()
+        cursor.close()
+
+    
+    return render_template('esborrar_client.html')
+
 
 #######################################################################
 #                           CLIENT DASHBOARD                           #
@@ -264,19 +341,16 @@ def show_client():
 # Admin Dashboard Page
 @app.route('/client_dashboard')
 def client_dashboard():
-    dades = []
+
     data = request.args.getlist('data')
     data = (data[0][1:-1]).split(',')
-
     dni = data[0][1:].strip("'")
-    nom = data[6][1:].strip("'")
-
-    dades.append(nom)
-    dades.append(dni)
-
+    
     classes_realitzades = []
 
-    # Fetch data from the database
+    dades = get_dades(data)
+
+    # Obtenim les classes per aquest client
     cursor = conn.cursor()
     cursor.execute("select classe from participacions where client = %s", (dni,))
     classes = cursor.fetchall()
@@ -285,12 +359,76 @@ def client_dashboard():
         nom_classe = cursor.fetchall()
         classes_realitzades.append(nom_classe[0][0])
 
+    # Obtenim qui es el seu entrenador
     
     cursor.close()
 
-    print(dades)
-    return render_template('client_dashboard.html', dades=dades, classes_realitzades=classes_realitzades, dni=dni)
+    return render_template('client_dashboard.html', dades=dades, classes_realitzades=classes_realitzades)
 
+@app.route('/info_client_actualitzada', methods=['POST'])
+def info_client_actualitzada():
+
+    if request.method == 'POST':
+        correu = request.form['correu']
+        telefon = request.form['telefon']
+        adreca = request.form['adreca']
+        compte_bancari = request.form['compte_bancari']
+        contrassenya = request.form['contrassenya']
+        dni = request.form['dni']
+
+        cursor = conn.cursor()
+        cursor.execute("UPDATE clients SET correu_electronic = %s, telefon = %s, adreca = %s, compte_bancari = %s, passwords = %s WHERE dni = %s", (correu, telefon, adreca, compte_bancari, contrassenya, dni))
+        conn.commit()
+
+        cursor.execute("SELECT * FROM clients WHERE correu_electronic = %s AND passwords = %s", (correu, contrassenya))
+        data = cursor.fetchall()
+        cursor.close()
+
+        random_number = random.randint(1, 99)
+
+        dades = []
+        dades.append(data[0][4] + ' ' + data[0][5])
+        dades.append(data[0][3])
+        dades.append(data[0][7])
+        dades.append(data[0][0])
+        dades.append(data[0][2])
+        dades.append(data[0][6])
+        dades.append(data[0][8])
+        dades.append(data[0][15])
+        dades.append(data[0][18])
+        dades.append(random_number)
+
+
+    return render_template('client_dashboard.html', dades=dades)
+
+def get_dades (data):
+
+    dades = []
+
+    dni = data[0][1:].strip("'")
+    nom = data[6][1:].strip("'")
+    cognom = data[7][1:].strip("'")
+    compte_bancari = data[8][1:].strip("'")
+    correu = data[5][1:].strip("'")
+    adreca = data[4][1:].strip("'")
+    data_naixement = data[10][15:].strip("'") + '/' + data[11][1:].strip("'") + '/' + data[12][1:-1].strip("'")
+    telefon = data[9][9:-1].strip("'")
+    estat = data[19][1:].strip("'")
+    contrassenya = data[22][1:].strip("'")
+    random_number = random.randint(1, 99)
+
+    dades.append(nom + ' ' + cognom)
+    dades.append(correu)
+    dades.append(telefon)
+    dades.append(dni)
+    dades.append(adreca)
+    dades.append(compte_bancari)
+    dades.append(data_naixement)
+    dades.append(estat)
+    dades.append(contrassenya)
+    dades.append(random_number)
+
+    return dades
 
 if __name__ == '__main__':
     app.run(debug=True)

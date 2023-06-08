@@ -24,6 +24,54 @@
             font-weight: bold;
         }
         
+        .banner {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .banner img {
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+        }
+        
+        .hidden-menu {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background-color: #fcdab7;
+            padding: 20px;
+            transition: width 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .hidden-menu.show {
+            width: 200px;
+        }
+        
+        .hidden-menu ul {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+        }
+        
+        .hidden-menu ul li {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .hidden-menu ul li a {
+            color: #4d4d4d;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .hidden-menu ul li a:hover {
+            color: #fbc79e;
+        }
+        
         .section {
             margin-bottom: 30px;
         }
@@ -53,52 +101,79 @@
         
         .data-item span {
             color: #4d4d4d;
+            margin-right: 450px;
+        }
+
+        .data-item-tipus span {
+            color: #4d4d4d;
+            margin-right: 600px;
+        }
+
+        .data-item-naixement span {
+            color: #4d4d4d;
+            margin-right: 540px;
+        }
+
+        .data-item-dni span {
+            color: #4d4d4d;
+            margin-right: 530px;
         }
         
-        .create-routine {
-            background-color: #fcdab7;
-            padding: 20px;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
         
-        .create-routine-title {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        
-        .form-group input[type="text"] {
-            width: 100%;
-            padding: 8px;
-            font-size: 16px;
+        .data-item input[type="text"] {
+            width: 70%;
+            padding: 5px;
+            font-size: 14px;
             border-radius: 5px;
             border: 1px solid #ccc;
         }
         
-        .submit-button {
-            border: none;
+        .data-item .edit-button {
             background-color: #4d4d4d;
             color: #ffffff;
-            padding: 8px 12px;
+            padding: 4px 8px;
             border-radius: 5px;
             cursor: pointer;
-            font-weight: bold;
+            font-size: 12px;
             transition: background-color 0.3s ease;
         }
         
-        .submit-button:hover {
+        .data-item .edit-button:hover {
             background-color: #fbc79e;
+        }
+        
+        .data-item .update-button,
+        .data-item .cancel-button {
+            display: none;
+            background-color: #4d4d4d;
+            color: #ffffff;
+            padding: 4px 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .data-item .update-button:hover,
+        .data-item .cancel-button:hover {
+            background-color: #fbc79e;
+        }
+        
+        .data-item.editing span {
+            display: none;
+        }
+        
+        .data-item.editing input[type="text"] {
+            display: inline-block;
+        }
+        
+        .data-item.editing .edit-button {
+            display: none;
+        }
+        
+        .data-item.editing .update-button,
+        .data-item.editing .cancel-button {
+            display: inline-block;
         }
     </style>
 </head>
@@ -106,54 +181,73 @@
     <div class="container">
         <h1>Client Dashboard</h1>
         
-        <div class="section">
-            <div class="section-title">Personal Information</div>
-            <div class="section-content">
-                <div class="data-item">
-                    <label>Nom:</label>
-                    <span> {{ dades[0] }} </span>
-                </div>
-                <div class="data-item">
-                    <label>Entrenador:</label>
-                    <span>Emily Smith</span>
-                </div>
-                <div class="data-item">
-                    <label>Gimnas:</label>
-                    <span>FitZone Fitness Center</span>
-                </div>
-                <div class="data-item">
-                    <label>Classes més freqüents:</label>
-                    {% for i in classes_realitzades %}
-                    <span>{{ i }}</span>
-                    {% endfor %}
-                </div>
-            </div>
+        <div class="banner">
+            <img src="https://randomuser.me/api/portraits/men/{{ dades[9] }}.jpg" alt="Profile Picture">
+        </div>
+        
+        <div class="hidden-menu">
+            <ul>
+                <li><a href="#">Usuari</a></li>
+                <li><a href="#">Dieta</a></li>
+                <li><a href="#">Entrenaments</a></li>
+                <li><a href="#">Reservar classes</a></li>
+            </ul>
         </div>
         
         <div class="section">
-            <div class="section-title">Create Workout Routine</div>
-            <div class="section-content">
-                <form method="POST" action="/create_routine">
-                    <div class="form-group">
-                        <label>Day:</label>
-                        <input type="text" name="day" required>
+            <div class="section-title">Informació Personal</div>
+            <form class="section-content"method="POST" action="/info_client_actualitzada">
+                <div class="data-item">
+                    <label>Nom:</label>
+                    <span>{{ dades[0] }}</span>
+                </div>
+                <div class="data-item">
+                    <label>DNI:</label>
+                    <div class="data-item-dni">
+                        <span>{{ dades[3] }}</span>
+                        <input type="hidden" id="dni-input" name="dni" value="{{ dades[3] }}">
                     </div>
-                    <div class="form-group">
-                        <label>Exercise:</label>
-                        <input type="text" name="exercise" required>
+                </div>
+                <div class="data-item">
+                    <label>Data naixement:</label>
+                    <div class="data-item-naixement">
+                        <span>{{ dades[6] }}</span>
                     </div>
-                    <div class="form-group">
-                        <label>Sets:</label>
-                        <input type="text" name="sets" required>
+                </div>
+                <div class="data-item">
+                    <label>Estat:</label>
+                    <div class="data-item-tipus">
+                        <span>{{ dades[7] }}</span>
                     </div>
-                    <div class="form-group">
-                        <label>Reps:</label>
-                        <input type="text" name="reps" required>
-                    </div>
-                    <button type="submit" class="submit-button">Create Routine</button>
-                </form>
-            </div>
+                </div>
+                <div class="data-item">
+                    <label>Correu:</label>
+                    <input type="text" id="correu" name="correu" value="{{ dades[1] }}">
+                    <button class="edit-button">Edit</button>
+                </div>
+                <div class="data-item">
+                    <label>Telefon:</label>
+                    <input type="text" id="telefon" name="telefon" value="{{ dades[2] }}">
+                    <button class="edit-button">Edit</button>
+                </div>
+                <div class="data-item">
+                    <label>Adreça:</label>
+                    <input type="text" id="adreca" name="adreca" value="{{ dades[4] }}">
+                    <button class="edit-button">Edit</button>
+                </div>
+                <div class="data-item">
+                    <label>Compte Bancari:</label>
+                    <input type="text" id="compte_bancari" name="compte_bancari" value="{{ dades[5] }}">
+                    <button class="edit-button">Edit</button>
+                </div>
+                <div class="data-item">
+                    <label>Contrassenya:</label>
+                    <input type="text" id="contrassenya" name="contrassenya" value="{{ dades[8] }}">
+                    <button class="edit-button">Edit</button>
+                </div>
+            </form>
         </div>
-    </div>
+    </div>    
+            
 </body>
 </html>
