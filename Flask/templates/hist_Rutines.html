@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Historial Classes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f6f2;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #4d4d4d;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 32px;
+            font-weight: bold;
+        }
+        
+        .class-history {
+            margin-top: 30px;
+        }
+        
+        .class-history-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .class-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .class-item .class-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .class-item .class-name {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .class-item .class-date {
+            color: #888888;
+        }
+        
+        .class-item .class-duration {
+            color: #888888;
+            margin-left: 10px;
+        }
+        
+        .class-item .class-status {
+            font-weight: bold;
+            color: #4d4d4d;
+        }
+        
+        .class-item .class-grade {
+            font-weight: bold;
+            color: #4d4d4d;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Historial Classes</h1>
+        
+        <div class="class-history">
+            <div class="class-history-title">Classes en les que has assistit...</div>
+            
+            {% for i in range(longitud) %}
+            <div class="class-item">
+                <div class="class-info">
+                    <div class="class-name">{{ classes_realitzades[i][1] }}</div>
+                    <div class="class-date">Data : {{ classes_realitzades[i][2] }}</div>
+                    <div class="class-duration">Duració: {{ classes_realitzades[i][3] }}</div>
+                </div>
+                <div class="class-status">Hora: {{ classes_realitzades[i][4] }}</div>
+                <div class="class-grade">Tutor: {{ tutors[i] }}</div>
+            </div>
+            {% endfor %}
+
+        </div>
+
+        <a href="/client_dashboard">Tornar</a>
+    </div>    
+</body>
+</html>

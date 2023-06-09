@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Class Sign-up</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f6f2;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #4d4d4d;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 32px;
+            font-weight: bold;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .section-content {
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 5px;
+        }
+        
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-select {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background-color: #ffffff;
+            cursor: pointer;
+        }
+        
+        .dropdown-select:focus {
+            outline: none;
+            border-color: #fbc79e;
+        }
+        
+        .dropdown-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 5px;
+        }
+        
+        .dropdown-option {
+            display: block;
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .dropdown-option:hover {
+            background-color: #fbc79e;
+        }
+        
+        .share-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: none;
+            background-color: #4d4d4d;
+            color: #ffffff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .share-button:hover {
+            background-color: #fbc79e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Apuntat a una Classe</h1>
+        
+        <div class="section">
+            <div class="section-title">Selecciona una Classe</div>
+            <div class="section-content">
+                <div class="dropdown">
+                    <select class="dropdown-select" id="class-dropdown">
+                        <option value="" selected disabled>Select a class</option>
+                        {% for class in classes %}
+                            <option value="{{ class[0] }}">{{ class[0] }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="dropdown-options" id="dropdown-options"></div>
+                </div>
+            </div>
+        </div>
+        
+        <button class="share-button" id="share-button" disabled>Share Selection</button>
+    </div>
+
+    <script>
+        // Get the dropdown element
+        var dropdown = document.getElementById('class-dropdown');
+        
+        // Get the dropdown options container
+        var dropdownOptions = document.getElementById('dropdown-options');
+        
+        // Get the share button
+        var shareButton = document.getElementById('share-button');
+        
+        // Add event listener for dropdown change
+        dropdown.addEventListener('change', function() {
+            // Enable or disable the share button based on selection
+            shareButton.disabled = (dropdown.value === '');
+        });
+        
+        shareButton.addEventListener('click', function() {
+            // Get the selected class
+            var selectedClass = dropdown.value;
+
+            // Perform the action to share the selected class (e.g., redirect to a new page, display a message, etc.)
+            alert('Has Escollit: ' + selectedClass);
+
+            // Send the selected class value and dni to app.py
+            fetch('/apuntar_classe?dni=' + encodeURIComponent('{{ dni }}'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ selectedClass: selectedClass })
+            }).then(function(response) {
+                // Handle the response if needed
+            });
+        });
+    </script>
+    
+</body>
+</html>

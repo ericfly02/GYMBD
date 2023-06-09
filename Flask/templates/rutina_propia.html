@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rutina Pròpia</title>
+    <style>
+        /* Your existing CSS styles */
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f6f2;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #4d4d4d;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 32px;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #fcdab7;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form {
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .form label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .form input[type="text"],
+        .form select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        
+        .form .number-widget {
+            display: flex;
+            align-items: center;
+        }
+        
+        .form .number-widget .number-input {
+
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 8px;
+        }
+        
+        .form .number-widget .number-buttons {
+            display: flex;
+            flex-direction: column;
+            margin-left: 10px;
+        }
+        
+        .form .number-widget .number-buttons button {
+            border: none;
+            background-color: #4d4d4d;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 5px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .form .number-widget .number-buttons button:hover {
+            background-color: #fbc79e;
+        }
+        
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        .button-container .btn {
+            padding: 8px 20px;
+            background-color: #4d4d4d;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .button-container .btn-large {
+            padding: 15px 30px;
+            font-size: 20px;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Rutina Pròpia</h1>
+        
+        <form class="form" method="POST" action="/add_rutina">
+            <label for="entrenament">Entrenament</label>
+            <input type="text" id="entrenament" name="entrenament" placeholder="Dia de l'entrenament" required>
+            
+            <label for="exercici">Exercici</label>
+            <input type="text" id="exercici" name="exercici" placeholder="Número i nom de l'exercici" required>
+            
+            <label for="serie">Sèrie</label>
+            <input type="text" id="serie" name="serie" placeholder="Sèries de l'exercici" required>
+            
+            <div class="number-widget">
+                <label for="repeticions">Número Repeticions</label>
+                <div class="number-input">
+                    <input type="text" id="repeticions" name="repeticions" placeholder="Selecciona el número de repeticions" value=1 required>
+                </div>
+                <div class="number-buttons">
+                    <button type="button" onclick="decreaseValue()">-</button>
+                    <button type="button" onclick="increaseValue()">+</button>
+                </div>
+            </div>
+            
+            <div class="button-container">
+                <button class="btn" type="button" onclick="afegeixSerie()">Afegeix Sèrie</button>
+                <button class="btn" type="button" onclick="afegeixExercici()">Afegeix Exercici</button>
+            </div>
+            
+            <div class="button-container">
+                <a href="/entrenaments" class="btn-large" type="button">Finalitza Entrenament</a>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        function increaseValue() {
+            var input = document.getElementById('repeticions');
+            var value = parseInt(input.value);
+            if (value < 10) {
+                input.value = value + 1;
+            }
+        }
+
+        function decreaseValue() {
+            var input = document.getElementById('repeticions');
+            var value = parseInt(input.value);
+            if (value > 1) {
+                input.value = value - 1;
+            }
+        }
+        
+        function afegeixSerie() {
+            // Implement your logic to add a serie here
+            alert('Sèrie afegida');
+        }
+        
+        function afegeixExercici() {
+            // Implement your logic to add an exercici here
+            alert('Exercici afegit');
+        }
+    </script>
+</body>
+</html>

@@ -258,11 +258,10 @@
         
         <div class="hidden-menu">
             <ul>
-                <li><a href="client_dashboard">Usuari</a></li>
-                <li><a href="entrenaments?dni={{ dades[3] }}">Entrenaments</a></li>
-                <li><a href="apuntar_classe?dni={{ dades[3] }}">Reservar classes</a></li>
-                <li><a href="hist_Rutines?dni={{ dades[3] }}">Historial Rutines</a></li>
-                <li><a href="hist_Classes?dni={{ dades[3] }}">Historial Classes</a></li>
+                <li><a href="info_client_actualitzada">Usuari</a></li>
+                <li><a href="dieta">Dieta</a></li>
+                <li><a href="entrenaments">Entrenaments</a></li>
+                <li><a href="reservar_classe">Reservar classes</a></li>
             </ul>
         </div>
 
@@ -279,7 +278,7 @@
             var medicalParams = {{ parametres_medics|tojson }};
             var ctx = document.getElementById('medical-graph').getContext('2d');
             var medicalGraph = new Chart(ctx, {
-                type: 'bar',
+                type: 'line',
                 data: {
                     labels: ['Massa òssia', 'Massa Nuscular', 'Pes', 'Alçada', 'Greix'],
                     datasets: [{

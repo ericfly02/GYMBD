@@ -191,7 +191,7 @@ def clients():
     if request.method == 'POST':
         if 'nom' in request.form:
             dades = request.form['nom'].split(' ')
-            nom = dades[0]
+            nom = dades[0]  
             print(dades)
             cursor = conn.cursor()
 
@@ -345,25 +345,18 @@ def client_dashboard():
     data = request.args.getlist('data')
     data = (data[0][1:-1]).split(',')
     dni = data[0][1:].strip("'")
+
+    massa_ossia = float(data[17][9:-1].strip("'"))
+    massa_muscular = float(data[18][9:-1].strip("'"))
+    pes = float(data[14][9:-1].strip("'"))
+    alcada = float(data[15][9:-1].strip("'"))
+    greix = float(data[16][9:-1].strip("'"))
     
-    classes_realitzades = []
+    parametres_medics = [massa_ossia, massa_muscular, pes, alcada, greix]
 
     dades = get_dades(data)
 
-    # Obtenim les classes per aquest client
-    cursor = conn.cursor()
-    cursor.execute("select classe from participacions where client = %s", (dni,))
-    classes = cursor.fetchall()
-    for classe in classes:
-        cursor.execute("select tipus from classes where codi = %s", (classe[0],))
-        nom_classe = cursor.fetchall()
-        classes_realitzades.append(nom_classe[0][0])
-
-    # Obtenim qui es el seu entrenador
-    
-    cursor.close()
-
-    return render_template('client_dashboard.html', dades=dades, classes_realitzades=classes_realitzades)
+    return render_template('client_dashboard.html', dades=dades, parametres_medics=parametres_medics)
 
 @app.route('/info_client_actualitzada', methods=['POST'])
 def info_client_actualitzada():
@@ -398,8 +391,16 @@ def info_client_actualitzada():
         dades.append(data[0][18])
         dades.append(random_number)
 
+        massa_ossia = float(data[0][13])
+        massa_muscular = float(data[0][14])
+        pes = float(data[0][10])
+        alcada = float(data[0][11])
+        greix = float(data[0][12])
 
-    return render_template('client_dashboard.html', dades=dades)
+        parametres_medics = [massa_ossia, massa_muscular, pes, alcada, greix]
+
+
+    return render_template('client_dashboard.html', dades=dades, parametres_medics=parametres_medics)
 
 def get_dades (data):
 
@@ -429,6 +430,76 @@ def get_dades (data):
     dades.append(random_number)
 
     return dades
+
+@app.route('/entrenaments', methods=['GET', 'POST'])
+def entrenaments():
+
+    dni = request.args.get('dni')
+
+    return render_template('entrenaments.html', dni=dni)
+
+@app.route('/rutina_propia', methods=['GET', 'POST'])
+def rutina_propia():
+
+    dni = request.args.get('dni')
+
+    return render_template('rutina_propia.html', dni=dni)
+
+@app.route('/hist_Classes')
+def hist_Classes():
+
+    dni = request.args.get('dni')
+
+    # Obtenim les classes per aquest client
+    classes_realitzades = []
+    cursor = conn.cursor()
+    cursor.execute("select classe from participacions where client = %s", (dni,))
+    classes = cursor.fetchall()
+    for classe in classes:
+        cursor.execute("select * from classes where codi = %s", (classe[0],))
+        nom_classe = cursor.fetchall()
+        classes_realitzades.append(nom_classe[0])
+
+    tutors = []
+    for tutor in classes_realitzades:
+        cursor.execute("select * from empleats where dni = %s", (tutor[7],))
+        nom_tutor = cursor.fetchall()
+        tutors.append(nom_tutor[0][3] + ' ' + nom_tutor[0][4])
+
+    cursor.close()
+
+    longitud = len(classes_realitzades)
+
+    return render_template('hist_Classes.html', longitud=longitud, classes_realitzades=classes_realitzades, tutors=tutors)
+
+@app.route('/hist_Rutines')
+def hist_Rutines():
+
+    return render_template('hist_Rutines.html')
+
+from flask import request
+
+@app.route('/apuntar_classe', methods=['GET', 'POST'])
+def apuntar_classe():
+    dni = request.args.get('dni')  # Get the 'dni' value from the query parameters
+    print(dni)
+
+    if request.method == 'POST':
+        classe_seleccionada = request.json.get('selectedClass')
+        print(classe_seleccionada)
+        cursor = conn.cursor()
+        cursor.execute("select codi from classes where tipus = %s", (classe_seleccionada,))
+        codi_classe = cursor.fetchall()[0][0]
+        cursor.execute("INSERT INTO participacions VALUES (%s, %s)", (codi_classe, dni))
+        conn.commit()
+        cursor.close()
+
+    cursor = conn.cursor()
+    cursor.execute("select distinct tipus from classes")
+    classes = cursor.fetchall()
+    cursor.close()
+
+    return render_template('apuntar_classe.html', classes=classes, dni=dni)
 
 if __name__ == '__main__':
     app.run(debug=True)

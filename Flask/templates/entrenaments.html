@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Entrenaments</title>
+    <style>
+       
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f6f2;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #4d4d4d;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 32px;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #fcdab7;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .switch-Propia {
+            margin-top: 100px;
+            margin-left: 100px;
+            font-weight: bold;
+            color: #4d4d4d;
+            font-size: 20px;
+        }
+
+        .switch-Planificada {
+            margin-top: 120px;
+            margin-left: 100px;
+            font-weight: bold;
+            color: #4d4d4d;
+            font-size: 20px;
+        }
+        
+        .switch {
+            display: inline-block;
+            position: relative;
+            width: 80px;
+            height: 34px;
+            margin: 20px auto;
+            margin-left: 100px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+        
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+        
+        input:checked + .slider:before {
+            -webkit-transform: translateX(46px);
+            -ms-transform: translateX(46px);
+            transform: translateX(46px);
+        }
+        
+        /* Rounded sliders */
+        .slider.round {
+            border-radius: 34px;
+        }
+        
+        .slider.round:before {
+            border-radius: 50%;
+        }
+        
+        .card {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+        
+        .card select {
+            margin-top: 10px;
+            padding: 10px;
+            width: 100%;
+        }
+        
+        .card button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4d4d4d;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #comenca-button {
+            border: none;
+            background-color: #4d4d4d;
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        
+        #comenca-button:hover {
+            background-color: #fbc79e;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Entrenaments</h1>
+
+        
+        <span class="switch-Planificada">Rutina Planificada</span>
+        <div class="switch">
+            <label>                
+                <input type="checkbox" id="switch-input" onchange="toggleRoutineType()" />
+                <span class="slider round"></span>
+            </label>
+        </div>
+        <span class="switch-Propia">Rutina Propia</span>
+
+        <div id="routine-propia" style="display: none; display: flex; align-items: center; justify-content: center; height: 100vh; margin-left: 300px;">
+            <button id="comenca-button" style="padding: 20px 40px; font-size: 24px;">Comença</button>
+        </div>
+        
+
+        <div id="routine-planificada" style="display: none;" class="card">
+            <label for="select-rutina">Selecciona rutina:</label>
+            <select id="select-rutina">
+                <option value="rutina1">Rutina 1</option>
+                <option value="rutina2">Rutina 2</option>
+                <option value="rutina3">Rutina 3</option>
+            </select>
+            <label for="select-rutina-dia">Selecciona rutina dia setmana diferent:</label>
+            <select id="select-rutina-dia">
+                <option value="rutina-dilluns">Rutina Dilluns</option>
+                <option value="rutina-dimarts">Rutina Dimarts</option>
+                <option value="rutina-dimecres">Rutina Dimecres</option>
+            </select>
+            <button id="comenca-button">Comença</button>
+        </div>
+
+        <script>
+            function toggleRoutineType() {
+                var switchInput = document.getElementById('switch-input');
+                var routinePropia = document.getElementById('routine-propia');
+                var routinePlanificada = document.getElementById('routine-planificada');
+        
+                if (switchInput.checked) {
+                    routinePropia.style.display = 'block';
+                    routinePlanificada.style.display = 'none';
+                } else {
+                    routinePropia.style.display = 'none';
+                    routinePlanificada.style.display = 'block';
+                }
+            }
+        
+            var comencaButton = document.getElementById('comenca-button');
+            comencaButton.addEventListener('click', function() {
+                var switchInput = document.getElementById('switch-input');
+        
+                if (switchInput.checked) {
+                    alert('Començar Rutina Propia');
+                    
+                    // Send the selected class value and dni to app.py
+                    fetch('/rutina_propia?dni=' + encodeURIComponent('{{ dni }}'), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ switchInput: switchInput })
+                    }).then(function(response) {
+                        // Redirect to rutina_propia.html after the POST request is completed
+                        window.location.href = '/rutina_propia?dni=' + encodeURIComponent('{{ dni }}');
+                    });
+                } else {
+                    var selectRutina = document.getElementById('select-rutina').value;
+                    var selectRutinaDia = document.getElementById('select-rutina-dia').value;
+                    alert('Començar Rutina Planificada\nRutina: ' + selectRutina + '\nDia: ' + selectRutinaDia);
+                }
+            });
+        </script>
+        
+    </div>
+</body>
+</html>
