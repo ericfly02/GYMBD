@@ -78,20 +78,19 @@
 </head>
 <body>
     <div class="container">
-        <h1>Historial Classes</h1>
+        <h1>Historial Rutines</h1>
         
         <div class="class-history">
-            <div class="class-history-title">Classes en les que has assistit...</div>
+            <div class="class-history-title">Rutines que has realitzat...</div>
             
             {% for i in range(longitud) %}
             <div class="class-item">
                 <div class="class-info">
-                    <div class="class-name">{{ classes_realitzades[i][1] }}</div>
-                    <div class="class-date">Data : {{ classes_realitzades[i][2] }}</div>
-                    <div class="class-duration">Duració: {{ classes_realitzades[i][3] }}</div>
+                    <div class="class-name">{{ rutines_realitzades[i][0] }} </div>
+                    <div class="class-date">Data : {{ rutines_realitzades[i][1] }}</div>
+                    <div class="class-duration">Hora: {{ rutines_realitzades[i][2] }}</div>
                 </div>
-                <div class="class-status">Hora: {{ classes_realitzades[i][4] }}</div>
-                <div class="class-grade">Tutor: {{ tutors[i] }}</div>
+                <div class="class-status">Plantilla: {{ rutines_realitzades[i][4] }}</div>
             </div>
             {% endfor %}
 

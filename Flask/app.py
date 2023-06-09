@@ -2,6 +2,11 @@ from flask import Flask, render_template, jsonify, redirect, url_for, request
 import psycopg2
 import random
 from urllib.parse import urlencode
+from faker import Faker
+import datetime
+import time
+
+fake = Faker('es_ES')
 
 
 app = Flask(__name__)
@@ -346,11 +351,13 @@ def client_dashboard():
     data = (data[0][1:-1]).split(',')
     dni = data[0][1:].strip("'")
 
-    massa_ossia = float(data[17][9:-1].strip("'"))
-    massa_muscular = float(data[18][9:-1].strip("'"))
-    pes = float(data[14][9:-1].strip("'"))
-    alcada = float(data[15][9:-1].strip("'"))
-    greix = float(data[16][9:-1].strip("'"))
+    print(data)
+
+    massa_ossia = float(data[16][9:-1].strip("'"))
+    massa_muscular = float(data[17][9:-1].strip("'"))
+    pes = float(data[13][9:-1].strip("'"))
+    alcada = float(data[14][9:-1].strip("'"))
+    greix = float(data[15][9:-1].strip("'"))
     
     parametres_medics = [massa_ossia, massa_muscular, pes, alcada, greix]
 
@@ -442,8 +449,103 @@ def entrenaments():
 def rutina_propia():
 
     dni = request.args.get('dni')
+    codi_exercici = request.args.get('exercici')
+    pes = request.args.get('pes')
+    creat = request.args.get('creat')
+    codi_entrenament = request.args.get('codi_entrenament')
+    ronda = request.args.get('ronda')
+    serie = 1
+    codi_ronda = request.args.get('codi_ronda')
+    repeticions = request.args.get('repeticions')
+    num_exercici = request.args.get('num_exercici')
+    num_exercici = int(num_exercici)
 
-    return render_template('rutina_propia.html', dni=dni)
+    cursor = conn.cursor()
+
+    if creat == 'true':
+        # creem codi ronda que no estigui ja a la base de dades
+        while True:
+            codi_ronda = ''.join(fake.random_letters(length=4)) + str(fake.random_int(min=1000, max=9999))
+            print(codi_ronda)
+            cursor.execute("select count(*) from rondes where codi = %s", (codi_ronda,))
+            ronda = cursor.fetchall()[0][0]
+            if ronda == 0:
+                break
+
+        # Mirem si hi ha algun entrenament creat
+        cursor.execute("select count(*) from rondes where entrenament = %s", (codi_entrenament,))
+        entrenament = cursor.fetchall()[0][0]
+        if entrenament > 0:
+            cursor.execute("select max(ordre) from rondes where entrenament = %s", (codi_entrenament,))
+            ordre = cursor.fetchall()[0][0]
+            ordre = ordre + 1
+
+        else:
+            ordre = 1
+        
+        cursor.execute("INSERT INTO rondes VALUES(%s, %s, %s, %s)", (codi_ronda, ordre, codi_entrenament, codi_exercici))
+        conn.commit()
+
+    if ronda == 'true':
+        cursor.execute("select count(*) from series where ronda = %s", (codi_ronda,))
+        ronda = cursor.fetchall()[0][0]
+
+        # Si no hi ha cap serie la creem
+        if ronda == 0:
+            cursor.execute("insert into series values(%s, %s, %s, %s, %s)", (serie, pes, repeticions, None, codi_ronda))
+            conn.commit()
+
+        else:
+            # obtenim numero series
+            cursor.execute("select num_serie from series where ronda = %s", (codi_ronda,))
+            serie = cursor.fetchall()[0][0]
+            serie = serie + 1
+            print(serie)
+            cursor.execute("UPDATE series SET num_serie = %s, pes = %s, num_repeticions = %s WHERE ronda = %s", (serie, pes, repeticions, codi_ronda))
+            conn.commit()
+
+    cursor.execute("select nom from exercicis where codi = %s", (codi_exercici,))
+    exercici = cursor.fetchall()[0]
+
+    cursor.close()
+
+    return render_template('rutina_propia.html', dni=dni, exercici=exercici, codi_exercici=codi_exercici, serie=serie, codi_ronda=codi_ronda, num_exercici=num_exercici, codi_entrenament=codi_entrenament)
+
+@app.route('/selecciona_exercici', methods=['GET', 'POST'])
+def selecciona_exercici():
+
+    dni = request.args.get('dni')
+    creat = request.args.get('creat')
+    num_exercici = request.args.get('num_exercici')
+    nou_exercici = request.args.get('nou_exercici')
+    
+
+    if num_exercici == None:
+        num_exercici = 0
+
+    if nou_exercici == 'true':
+        num_exercici = int(num_exercici)+1
+
+    cursor = conn.cursor()
+
+    if creat == 'true':
+        codi = ''.join(fake.random_letters(length=4)) + str(fake.random_int(min=1000, max=9999))
+        data = time.strftime("%Y-%m-%d")
+        hora = time.strftime("%H:%M:%S")
+
+        cursor.execute("INSERT INTO Entrenaments VALUES ('%s')" % (codi,))
+        conn.commit()
+        cursor.execute("insert into entrenaments_personals values (%s, %s, %s, %s, %s)", (codi, data, hora, dni, None))
+        conn.commit()
+
+    elif creat == 'false':
+        codi = request.args.get('codi_entrenament')
+    
+    cursor.execute("select * from exercicis groupby(nom)")
+    exercicis = cursor.fetchall()
+    cursor.close()
+
+    return render_template('selecciona_exercici.html', exercicis=exercicis, codi=codi, num_exercici=num_exercici)
 
 @app.route('/hist_Classes')
 def hist_Classes():
@@ -475,7 +577,22 @@ def hist_Classes():
 @app.route('/hist_Rutines')
 def hist_Rutines():
 
-    return render_template('hist_Rutines.html')
+    dni = request.args.get('dni')
+
+    # Obtenim les classes per aquest client
+    rutines_realitzades = []
+    cursor = conn.cursor()
+    cursor.execute("select * from entrenaments_personals where client = %s", (dni,))
+    classes = cursor.fetchall()
+    for classe in classes:
+        rutines_realitzades.append(classe)
+        print(classe)
+
+    cursor.close()
+
+    longitud = len(rutines_realitzades)
+
+    return render_template('hist_Rutines.html', longitud=longitud, rutines_realitzades=rutines_realitzades)
 
 from flask import request
 

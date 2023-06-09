@@ -148,12 +148,107 @@
         #comenca-button:hover {
             background-color: #fbc79e;
         }
+
+        .toggle-button {
+            position: fixed;
+            top: 50px;
+            left: 280px;
+            background-color: #4d4d4d;
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 999;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            animation: bounce 1s infinite;
+        }
+
+        .toggle-button:hover {
+            background-color: #fbc79e;
+        }
+
+        @keyframes bounce {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        .hidden-menu {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background-color: #fcdab7;
+            padding: 20px;
+            transition: width 0.3s ease;
+            overflow: hidden;
+        }
         
+        .hidden-menu.show {
+            width: 200px;
+        }
+        
+        .hidden-menu ul {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .hidden-menu.show ul {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .hidden-menu ul li {
+            margin-bottom: 10px;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .hidden-menu.show ul li {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .hidden-menu ul li a {
+            color: #4d4d4d;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .hidden-menu ul li a:hover {
+            color: #fbc79e;
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Entrenaments</h1>
+
+        <div class="hidden-menu">
+            <ul>
+                <li><a href="client_dashboard">Usuari</a></li>
+                <li><a href="entrenaments?dni={{ dni[0] }}">Entrenaments</a></li>
+                <li><a href="apuntar_classe?dni={{ dni[0] }}">Reservar classes</a></li>
+                <li><a href="hist_Rutines?dni={{ dni[0] }}">Historial Rutines</a></li>
+                <li><a href="hist_Classes?dni={{ dni[0] }}">Historial Classes</a></li>
+            </ul>
+        </div>
 
         
         <span class="switch-Planificada">Rutina Planificada</span>
@@ -186,6 +281,14 @@
             <button id="comenca-button">Comença</button>
         </div>
 
+        <button class="toggle-button" onclick="toggleMenu()">Toggle Menu</button>
+        <script>
+            function toggleMenu() {
+                const hiddenMenu = document.querySelector('.hidden-menu');
+                hiddenMenu.classList.toggle('show');
+            }
+        </script>
+
         <script>
             function toggleRoutineType() {
                 var switchInput = document.getElementById('switch-input');
@@ -209,7 +312,8 @@
                     alert('Començar Rutina Propia');
                     
                     // Send the selected class value and dni to app.py
-                    fetch('/rutina_propia?dni=' + encodeURIComponent('{{ dni }}'), {
+                    var creat = "true"; 
+                    fetch('/crea_rutina_personal?dni=' + encodeURIComponent('{{ dni }}'), {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -217,7 +321,7 @@
                         body: JSON.stringify({ switchInput: switchInput })
                     }).then(function(response) {
                         // Redirect to rutina_propia.html after the POST request is completed
-                        window.location.href = '/rutina_propia?dni=' + encodeURIComponent('{{ dni }}');
+                        window.location.href = '/selecciona_exercici?dni=' + encodeURIComponent('{{ dni }}')+ '&creat=' + encodeURIComponent(creat);;
                     });
                 } else {
                     var selectRutina = document.getElementById('select-rutina').value;

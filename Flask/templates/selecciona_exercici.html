@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rutina Propia</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f6f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #4d4d4d;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 32px;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #fcdab7;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .card {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+
+        .card select {
+            margin-top: 20px;
+            padding: 10px;
+            width: 100%;
+            font-size: 24px;
+        }
+
+        .card button {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #4d4d4d;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .card button:hover {
+            background-color: #fbc79e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Rutina Propia</h1>
+
+        <div class="card">
+            <label for="select-exercici">Selecciona Exercici:</label>
+            <select id="select-exercici">
+                {% for i in exercicis %}
+                    <option value="{{ i[0] }}">{{ i[1] }}</option>
+                {% endfor %}
+            </select>
+            <button id="redirect-button">Selecciona exercici</button>
+        </div>
+
+        <script>
+            var redirectButton = document.getElementById('redirect-button');
+            redirectButton.addEventListener('click', function() {
+                var selectedExercici = document.getElementById('select-exercici').value;
+                var dni = '{{ dni }}';
+                var creat = 'true';
+                var codi_entrenament = '{{ codi }}';
+                var num_exercici = '{{ num_exercici }}';
+                var url = '/rutina_propia?exercici=' + encodeURIComponent(selectedExercici) + '&dni=' + encodeURIComponent(dni) + '&creat=' + encodeURIComponent(creat) + '&codi_entrenament=' + encodeURIComponent(codi_entrenament) + '&num_exercici=' + encodeURIComponent(num_exercici);
+                // Redirect to /rutina_propia with selected exercici and dni
+                window.location.href = url;
+            });
+        </script>
+    </div>
+</body>
+
+</html>
