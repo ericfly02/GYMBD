@@ -603,7 +603,6 @@ def apuntar_classe():
 
     if request.method == 'POST':
         classe_seleccionada = request.json.get('selectedClass')
-        print(classe_seleccionada)
         cursor = conn.cursor()
         cursor.execute("select codi from classes where tipus = %s", (classe_seleccionada,))
         codi_classe = cursor.fetchall()[0][0]
@@ -612,8 +611,12 @@ def apuntar_classe():
         cursor.close()
 
     cursor = conn.cursor()
-    cursor.execute("select distinct tipus from classes")
+    cursor.execute("SELECT  tipus, data, duració, hora FROM (SELECT c.codi, c.tipus, c.data, c.duració, c.hora, c.codi_sala, c.codi_gimnas, c.tutor FROM classes c LEFT JOIN participacions p ON c.codi = p.classe AND p.client = %s WHERE p.classe IS NULL AND ((c.data > current_date) OR (c.data = current_date AND c.hora > current_time))) AS foo ORDER BY foo.data, foo.hora;", (dni,))
+
     classes = cursor.fetchall()
+
+    print(classes)
+
     cursor.close()
 
     return render_template('apuntar_classe.html', classes=classes, dni=dni)
