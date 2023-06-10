@@ -442,8 +442,63 @@ def get_dades (data):
 def entrenaments():
 
     dni = request.args.get('dni')
+    dia = request.args.get('selectedDia')
+    plantilla = request.args.get('codi_entrenament_diari')
+    rutines = get_rutina(dia)
 
-    return render_template('entrenaments.html', dni=dni)
+    if plantilla != None:
+        cursor = conn.cursor()
+
+        # creem codi entrenament_personal que no estigui ja a la base de dades
+        while True:
+            codi_entrenament = ''.join(fake.random_letters(length=4)) + str(fake.random_int(min=1000, max=9999))
+            print(codi_entrenament)
+            cursor.execute("select count(*) from entrenaments_personals where codi = %s", (codi_entrenament,))
+            ronda = cursor.fetchall()[0][0]
+            if ronda == 0:
+                break
+        
+        data = time.strftime("%Y-%m-%d")
+        hora = time.strftime("%H:%M:%S")
+        
+        cursor.execute("INSERT INTO Entrenaments VALUES ('%s')" % (codi_entrenament,))
+
+        cursor.execute("INSERT INTO entrenaments_personals VALUES(%s, %s, %s, %s, %s)", (codi_entrenament, data, hora, dni, plantilla))
+        conn.commit()
+
+        cursor.close()
+
+    return render_template('entrenaments.html', dni=dni, rutines=rutines)
+
+
+def get_rutina(dia):
+
+    cursor = conn.cursor()
+    cursor.execute("SELECT codi, rutina FROM entrenaments_diaris WHERE dia = %s limit 100", (dia,))
+    rutina = cursor.fetchall()
+
+    rutines = []
+
+    # obtenim nom de la rutina
+    for i in rutina:
+        cursor.execute("SELECT * FROM rutines WHERE codi = %s", (i[1],))
+        result = cursor.fetchall()
+        nom_rutina = result[0][1]
+        entrenador = result[0][2]
+        codi_rutina = result[0][0]
+        codi_entrenament_diari = i[0]
+
+        # obtenim nom de l'entrenador
+        cursor.execute("SELECT * FROM empleats WHERE dni = %s", (entrenador,))
+        result = cursor.fetchall()
+        nom_entrenador = result[0][3] + ' ' + result[0][4]
+
+        rutines.append([nom_rutina, nom_entrenador, codi_rutina, codi_entrenament_diari])
+    
+    cursor.close()
+
+    return rutines
+
 
 @app.route('/rutina_propia', methods=['GET', 'POST'])
 def rutina_propia():

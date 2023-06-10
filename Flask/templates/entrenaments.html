@@ -132,6 +132,10 @@
             font-size: 16px;
         }
 
+        .test label {
+            margin-top: 300px;
+         }
+
         #comenca-button {
             border: none;
             background-color: #4d4d4d;
@@ -266,19 +270,28 @@
         
 
         <div id="routine-planificada" style="display: none;" class="card">
-            <label for="select-rutina">Selecciona rutina:</label>
-            <select id="select-rutina">
-                <option value="rutina1">Rutina 1</option>
-                <option value="rutina2">Rutina 2</option>
-                <option value="rutina3">Rutina 3</option>
-            </select>
-            <label for="select-rutina-dia">Selecciona rutina dia setmana diferent:</label>
+            <label for="select-rutina-dia">Selecciona dia Setmana:</label>
             <select id="select-rutina-dia">
-                <option value="rutina-dilluns">Rutina Dilluns</option>
-                <option value="rutina-dimarts">Rutina Dimarts</option>
-                <option value="rutina-dimecres">Rutina Dimecres</option>
+                <option value="Dilluns">Rutina Dilluns</option>
+                <option value="Dimarts">Rutina Dimarts</option>
+                <option value="Dimecres">Rutina Dimecres</option>
+                <option value="Dijous">Rutina Dijous</option>
+                <option value="Divendres">Rutina Divendres</option>
+                <option value="Dissabte">Rutina Dissabte</option>
+                <option value="Diumenge">Rutina Diumenge</option>
             </select>
-            <button id="comenca-button">Comença</button>
+            <button id="aplicar-button">Aplicar</button>
+            <div class="test">
+                <label for="select-rutina">Selecciona rutina:</label>
+                <select id="select-rutina">
+                    {% for rutina in rutines %}
+                        <option value="{{ rutina[3] }}">{{ rutina[0] }} // {{ rutina[1] }}</option>
+                    {% endfor %}
+                </select>
+                <button id="comenca-button-planificada">Comença</button>
+            </div>
+            
+            
         </div>
 
         <button class="toggle-button" onclick="toggleMenu()">Toggle Menu</button>
@@ -303,16 +316,25 @@
                     routinePlanificada.style.display = 'block';
                 }
             }
+
+            var aplicarButton = document.getElementById('aplicar-button');
+            aplicarButton.addEventListener('click', function() {
+                var selectedDia = document.getElementById('select-rutina-dia').value;
+                var dni = '{{ dni }}';
+                var url = '/entrenaments?dni=' + encodeURIComponent(dni) + '&selectedDia=' + encodeURIComponent(selectedDia);
+                // Redirect to /rutina_propia with selected exercici and dni
+                window.location.href = url;
+            });
         
             var comencaButton = document.getElementById('comenca-button');
             comencaButton.addEventListener('click', function() {
                 var switchInput = document.getElementById('switch-input');
-        
+
                 if (switchInput.checked) {
                     alert('Començar Rutina Propia');
                     
                     // Send the selected class value and dni to app.py
-                    var creat = "true"; 
+                    var creat = "true";
                     fetch('/crea_rutina_personal?dni=' + encodeURIComponent('{{ dni }}'), {
                         method: 'POST',
                         headers: {
@@ -321,7 +343,8 @@
                         body: JSON.stringify({ switchInput: switchInput })
                     }).then(function(response) {
                         // Redirect to rutina_propia.html after the POST request is completed
-                        window.location.href = '/selecciona_exercici?dni=' + encodeURIComponent('{{ dni }}')+ '&creat=' + encodeURIComponent(creat);;
+                        window.location.href = '/rutina_propia?dni=' + encodeURIComponent('{{ dni }}');
+                        window.location.href = '/selecciona_exercici?dni=' + encodeURIComponent('{{ dni }}') + '&creat=' + encodeURIComponent(creat);
                     });
                 } else {
                     var selectRutina = document.getElementById('select-rutina').value;
@@ -329,6 +352,21 @@
                     alert('Començar Rutina Planificada\nRutina: ' + selectRutina + '\nDia: ' + selectRutinaDia);
                 }
             });
+
+
+
+            var comencaButtonPlanificada = document.getElementById('comenca-button-planificada');
+            comencaButtonPlanificada.addEventListener('click', function() {
+        
+                alert('Has començat una rutina PROPIA!!');
+                
+                var selectedEntrenamentDiari = document.getElementById('select-rutina').value;
+                var dni = '{{ dni }}';
+                var url = '/entrenaments?dni=' + encodeURIComponent(dni) + '&codi_entrenament_diari=' + encodeURIComponent(selectedEntrenamentDiari);
+                // Redirect to /rutina_propia with selected exercici and dni
+                window.location.href = url;
+            });
+
         </script>
         
     </div>
